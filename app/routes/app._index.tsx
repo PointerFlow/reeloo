@@ -27,7 +27,7 @@ export default function Index() {
         <Layout>
           <Layout.Section>
             <Text as="h2" variant="headingLg">
-              Hello, <span className="text-2xl font-bold">Jazbah</span>
+              Hello, <span className="text-2xl font-bold">Jaz</span>
 
             </Text>
             <Text as="p" variant="bodyMd">
