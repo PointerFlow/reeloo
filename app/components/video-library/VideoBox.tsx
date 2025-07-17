@@ -228,7 +228,7 @@ export default function VideoBox() {
                                 <Icon tone="critical" source={DeleteIcon} />
                             </div>
                             <div className='absolute top-2 right-11 bg-white rounded-lg p-1 cursor-pointer'>
-                                <Link url="/app/videoLibrary/edit">
+                                <Link monochrome url="/app/videoLibrary/edit">
                                     <Icon source={EditIcon} />
                                 </Link>
                             </div>
