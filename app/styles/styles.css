@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+.Polaris-ShadowBevel {
+  --pc-shadow-bevel-border-radius-xs: var(--p-border-radius-200) !important;
+}
+
+.Polaris-Banner{
+    overflow: hidden;
+}
+
+.Polaris-EmptyState__ImageContainer .Polaris-EmptyState__Image{
+  opacity: 1;
+}
+.Polaris-CalloutCard__Buttons button:empty{
+  display: none;
+}
+
+.Polaris-Button__Content {
+  white-space: normal;
+}
