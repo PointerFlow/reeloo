@@ -3,7 +3,7 @@
 client_id = "7e11d97853611287e8f1196316389296"
 name = "reeloo"
 handle = "reeloo-5"
-application_url = "https://skiing-ne-commodities-details.trycloudflare.com"
+application_url = "https://adam-ampland-outcome-xp.trycloudflare.com"
 embedded = true
 
 [build]
@@ -23,10 +23,10 @@ api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "write_products, read_products"
 
 [auth]
-redirect_urls = ["https://skiing-ne-commodities-details.trycloudflare.com/auth/callback", "https://skiing-ne-commodities-details.trycloudflare.com/auth/shopify/callback", "https://skiing-ne-commodities-details.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://adam-ampland-outcome-xp.trycloudflare.com/auth/callback", "https://adam-ampland-outcome-xp.trycloudflare.com/auth/shopify/callback", "https://adam-ampland-outcome-xp.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false

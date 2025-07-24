@@ -23,7 +23,7 @@ export default function AppVideoLibrary() {
             backAction={{ content: 'Products', url: '#' }}
             title="Feeds library"
             subtitle="Manage your video feeds and organize your shoppable content efficiently."
-            primaryAction={{ content: 'Create Feed', icon: OrderDraftIcon, }}
+            primaryAction={{ content: 'Create Feed', icon: OrderDraftIcon, url:'edit' }}
         >
             <VideoBox />
         </Page>
