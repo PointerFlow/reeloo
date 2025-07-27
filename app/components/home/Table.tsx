@@ -3,7 +3,6 @@ import {
   IndexTable,
   Text,
   useIndexResourceState,
-  Badge,
   BlockStack,
   InlineStack,
   Button,

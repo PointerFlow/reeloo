@@ -1,4 +1,4 @@
-import { useNavigate } from "@remix-run/react";
+import { useLoaderData, useNavigate } from "@remix-run/react";
 import { BlockStack, Button, Card, Icon, InlineStack } from "@shopify/polaris";
 import { LogoInstagramIcon, LogoTiktokIcon, UploadIcon, LogoYoutubeIcon } from '@shopify/polaris-icons';
 import { MediaImportData } from "types/mediaImport.type";
@@ -39,7 +39,9 @@ export default function MediaImportCard() {
         if (!url || url === "#") return;
         navigate(url);
     };
+    
     return (
+        
         <div className="grid grid-cols-4 gap-4">
             {
                 mediaSources && mediaSources.map((item, i) => {

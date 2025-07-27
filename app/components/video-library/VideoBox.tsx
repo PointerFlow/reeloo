@@ -1,4 +1,4 @@
-import { Card, Button, Divider, EmptyState, Text, BlockStack, InlineStack, Popover, ActionList, Icon, Box, VideoThumbnail, InlineGrid, Thumbnail, TextField, ChoiceList, OptionList, Modal, Combobox, Listbox, Checkbox, ButtonGroup, Link } from '@shopify/polaris';
+import { Card, Button, Divider, EmptyState, Text, BlockStack, InlineStack, Popover, ActionList, Icon, Box, VideoThumbnail, InlineGrid, Thumbnail, TextField, ChoiceList, OptionList, Modal, Combobox, Listbox, Checkbox, ButtonGroup, Link, useIndexResourceState } from '@shopify/polaris';
 import { useState, useCallback } from 'react';
 import { SearchIcon, FilterIcon, SortIcon } from '@shopify/polaris-icons';
 import emtyvideoImg from "../../Images/emty_video.png"
@@ -12,6 +12,7 @@ import {
 import thumblineImage from "../../Images/tiktokVideoThumbline.jpg";
 import productImag from "../../Images/productImage.png";
 import { TiktokVideoData } from 'types/tiktokVideo.type';
+import { useRouteLoaderData } from '@remix-run/react';
 
 
 // Sample video data
@@ -100,6 +101,7 @@ export default function VideoBox() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selected, setSelected] = useState<string[]>(['hidden']);
     const [selectedContent, setSelectedContent] = useState<'All Video' | 'Instagram' | 'Tiktok' | 'Device' | 'Youtube'>('All Video');
+    const [selectProduct, setSelectProduct] = useState<string[]>([]);
 
     const toggleActive = useCallback(() => setActive((active) => !active), []);
     const handleChange = useCallback((value: string[]) => setSelected(value), []);
@@ -115,7 +117,26 @@ export default function VideoBox() {
             {selectedContent}
         </Button>
     );
+
+
     // product tag poup table
+    // const { shopifyProducts } = useLoaderData<{ shopifyProducts: any }>();
+
+    const { shopifyProducts } = useRouteLoaderData("root") as { shopifyProducts: any };
+    console.log(selectProduct);
+
+    const handleProductSelect = (productId: string, checked: boolean) => {
+        console.log(checked)
+        setSelectProduct((prevSelected) => {
+            if (checked == true) {
+                return [...prevSelected, productId]
+            }
+            else {
+                return prevSelected.filter((id) => id !== productId);
+            }
+        })
+    }
+
     const TagProductPopup = (
         <Modal
             open={isPopupOpen}
@@ -139,69 +160,39 @@ export default function VideoBox() {
                     ></Combobox>
                 </Box>
                 <Listbox accessibilityLabel="Basic Listbox example">
-                    <Divider />
-                    <Listbox.Option value="UniqueValue-1">
-                        <Box paddingBlock="200">
-                            <InlineStack blockAlign='center'>
-                                <Checkbox
-                                    label=""
-                                // checked={checked}
-                                // onChange={handleChange}
-                                />
-                                <InlineStack gap="200">
-                                    <Card padding="0">
-                                        <img src={productImag} alt="" />
-                                    </Card>
-                                    <Text as='p' variant='bodyMd'>Vibe Retro Coffee Table</Text>
-                                </InlineStack>
-                            </InlineStack>
-                        </Box>
-                    </Listbox.Option>
-                    <Divider />
-                    <Listbox.Option value="UniqueValue-1">
-                        <Box paddingBlock="200">
-                            <InlineStack blockAlign='center'>
-                                <Checkbox
-                                    label=""
-                                // checked={checked}
-                                // onChange={handleChange}
-                                />
-                                <InlineStack gap="200">
-                                    <Card padding="0">
-                                        <img src={productImag} alt="" />
-                                    </Card>
-                                    <Text as='p' variant='bodyMd'>Vibe Retro Coffee Table</Text>
-                                </InlineStack>
-                            </InlineStack>
-                        </Box>
-                    </Listbox.Option>
-                    <Divider />
-                    <Listbox.Option value="UniqueValue-1">
-                        <Box paddingBlock="200">
-                            <InlineStack blockAlign='center'>
-                                <Checkbox
-                                    label=""
-                                // checked={checked}
-                                // onChange={handleChange}
-                                />
-                                <InlineStack gap="200">
-                                    <Card padding="0">
-                                        <img src={productImag} alt="" />
-                                    </Card>
-                                    <Text as='p' variant='bodyMd'>Vibe Retro Coffee Table</Text>
-                                </InlineStack>
-                            </InlineStack>
-                        </Box>
-                    </Listbox.Option>
-                    <Divider />
+                    {shopifyProducts && shopifyProducts.map((item: any) => {
+                        return (
+                            <div key={item.id}>
+                                <Divider />
+                                <div>
+                                    <Box paddingBlock="200">
+                                        <InlineStack blockAlign="center">
+                                            <Checkbox
+                                                label=""
+                                                checked={selectProduct.includes(item.id)}
+                                                onChange={(newChecked) => handleProductSelect(item.id, newChecked)}
+                                            />
+                                            <InlineStack gap="200">
+                                                <Card padding="0" roundedAbove="xs">
+                                                    <img src={item?.featuredMedia?.preview?.image?.url} width={35} height={35} alt={item.title} />
+                                                </Card>
+                                                <Text as="p" variant="bodyMd">{item.title}</Text>
+                                            </InlineStack>
+                                        </InlineStack>
+                                    </Box>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </Listbox>
+
                 <Box paddingBlockStart="400">
                     <InlineStack align='space-between'>
                         <Text as='p' variant='bodyMd'>
-                            2 Products selected
+                            {selectProduct.length} Product{selectProduct.length !== 1 ? 's' : ''} selected
                         </Text>
                         <ButtonGroup>
-                            <Button>Cancel</Button>
+                            <Button onClick={togglePopup}>Cancel</Button>
                             <Button variant="primary">Add</Button>
                         </ButtonGroup>
                     </InlineStack>
@@ -209,6 +200,7 @@ export default function VideoBox() {
             </Modal.Section>
         </Modal >
     );
+
 
     // TikTok Interface Component
     const TiktokInterface = () => (

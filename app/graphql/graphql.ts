@@ -1,3 +1,4 @@
+
 // Fetch all data from the query
 export async function fetchAllData(admin: { graphql: (arg0: any, arg1: { variables: { after: any; }; }) => any; }, query: string) {
   let allData: any[] = [];
@@ -20,6 +21,7 @@ export async function fetchAllData(admin: { graphql: (arg0: any, arg1: { variabl
 
       hasNextPage = data.pageInfo.hasNextPage;
       cursor = data.pageInfo.endCursor;
+
     } catch (error) {
       if (error instanceof Error) {
         console.error("Error fetching data:", error.message);
