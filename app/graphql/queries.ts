@@ -53,3 +53,35 @@ query GetAllCollections($after: String) {
   }
 }
 `;
+
+
+
+export const getVideoFileByIdQuery = `#graphql
+  query GetFileById($id: ID!) {
+    node(id: $id) {
+      id
+      ... on GenericFile {
+        url
+        alt
+        originalFileSize
+        mimeType
+        createdAt
+        updatedAt
+      }
+      ... on Video {
+        sources {
+          url
+          mimeType
+          width
+          height
+        }
+        originalSource {
+          url
+        }
+        alt
+        duration
+        filename
+      }
+    }
+  }
+`;

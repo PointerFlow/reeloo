@@ -3,7 +3,7 @@
 client_id = "7e11d97853611287e8f1196316389296"
 name = "reeloo"
 handle = "reeloo-5"
-application_url = "https://janet-buttons-issn-referrals.trycloudflare.com"
+application_url = "https://circular-infrastructure-air-refuse.trycloudflare.com"
 embedded = true
 
 [build]
@@ -23,10 +23,10 @@ api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products, read_products"
+scopes = "write_products,read_products,write_files"
 
 [auth]
-redirect_urls = ["https://janet-buttons-issn-referrals.trycloudflare.com/auth/callback", "https://janet-buttons-issn-referrals.trycloudflare.com/auth/shopify/callback", "https://janet-buttons-issn-referrals.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://circular-infrastructure-air-refuse.trycloudflare.com/auth/callback", "https://circular-infrastructure-air-refuse.trycloudflare.com/auth/shopify/callback", "https://circular-infrastructure-air-refuse.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false
