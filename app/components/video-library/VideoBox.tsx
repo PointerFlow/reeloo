@@ -13,7 +13,8 @@ import thumblineImage from "../../Images/tiktokVideoThumbline.jpg";
 import productImag from "../../Images/productImage.png";
 import { TiktokVideoData } from 'types/tiktokVideo.type';
 import { useRouteLoaderData } from '@remix-run/react';
-import { IShopData } from 'types/shop.type';
+import { IAllproduct } from 'types/allproduct.type';
+import { IShopifyProduct } from 'types/shopifyProduct.type';
 
 
 // Sample video data
@@ -119,7 +120,8 @@ export default function VideoBox() {
         </Button>
     );
 
-    const { shopifyProducts } = useRouteLoaderData("root") as { shopifyProducts: any };
+    const { shopifyProducts } = useRouteLoaderData("root") as { shopifyProducts: IAllproduct };
+
 
     const handleProductSelect = (productId: string, checked: boolean) => {
         setSelectProduct((prevSelected) => {
@@ -156,7 +158,7 @@ export default function VideoBox() {
                 </Box>
                 <Listbox accessibilityLabel="Basic Listbox example">
 
-                    {shopifyProducts && shopifyProducts.map((item: any) => {
+                    {Array.isArray(shopifyProducts) && shopifyProducts.map((item: IShopifyProduct) => {
                         return (
                             <div key={item.id}>
                                 <Divider />
