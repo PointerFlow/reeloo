@@ -17,7 +17,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function AppVideoLibrary() {
   return (
-    <Page backAction={{ content: "Products", url: "#" }} title="Video Library">
+    <Page backAction={{ content: "Products", onAction: () => { history.back() } }} title="Video Library">
       <BlockStack gap="500">
         <MediaImportCard />
         <VideoBox />

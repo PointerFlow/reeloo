@@ -47,7 +47,7 @@ export default function PageComponent() {
     ];
     return (
         <Page
-            backAction={{ content: 'Products', url: '#' }}
+            backAction={{ content: 'Products', onAction: () => { history.back() } }}
             title="Edit Video Details"
             subtitle="Manage your videos, tag products, and build engaging shoppable content."
             primaryAction={{ content: 'Update' }}
@@ -68,7 +68,6 @@ export default function PageComponent() {
                                 placeholder="write a video title"
                                 requiredIndicator
                             />
-
                             <Select
                                 label="Video Status"
                                 options={videoStatusOptions}

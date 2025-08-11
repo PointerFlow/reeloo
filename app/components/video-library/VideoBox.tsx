@@ -13,6 +13,7 @@ import thumblineImage from "../../Images/tiktokVideoThumbline.jpg";
 import productImag from "../../Images/productImage.png";
 import { TiktokVideoData } from 'types/tiktokVideo.type';
 import { useRouteLoaderData } from '@remix-run/react';
+import { IShopData } from 'types/shop.type';
 
 
 // Sample video data
@@ -118,15 +119,9 @@ export default function VideoBox() {
         </Button>
     );
 
-
-    // product tag poup table
-    // const { shopifyProducts } = useLoaderData<{ shopifyProducts: any }>();
-
     const { shopifyProducts } = useRouteLoaderData("root") as { shopifyProducts: any };
-    console.log(selectProduct);
 
     const handleProductSelect = (productId: string, checked: boolean) => {
-        console.log(checked)
         setSelectProduct((prevSelected) => {
             if (checked == true) {
                 return [...prevSelected, productId]
@@ -160,6 +155,7 @@ export default function VideoBox() {
                     ></Combobox>
                 </Box>
                 <Listbox accessibilityLabel="Basic Listbox example">
+
                     {shopifyProducts && shopifyProducts.map((item: any) => {
                         return (
                             <div key={item.id}>
@@ -200,7 +196,6 @@ export default function VideoBox() {
             </Modal.Section>
         </Modal >
     );
-
 
     // TikTok Interface Component
     const TiktokInterface = () => (

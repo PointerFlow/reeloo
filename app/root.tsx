@@ -7,16 +7,16 @@ import {
 } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 
-import { fetchAllData } from "./graphql/graphql";
-import { getAllProductsQuery } from "./graphql/queries";
+import { executeGraphQL, fetchAllData } from "./graphql/graphql";
+import { getAllProductsQuery, getShopQuery } from "./graphql/queries";
 import { authenticate } from "./shopify.server";
+import { IShopData } from "types/shop.type";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
   const shopifyProducts = await fetchAllData(admin, getAllProductsQuery);
-  return { shopifyProducts };
+  const shopData: IShopData = await executeGraphQL(admin, getShopQuery);
+  return { shopifyProducts, shopData };
 };
-
-// export const handle = { id: 'shopify-product' };
 
 export default function App() {
   return (

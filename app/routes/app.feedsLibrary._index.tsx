@@ -20,10 +20,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function AppVideoLibrary() {
     return (
         <Page
-            backAction={{ content: 'Products', url: '#' }}
+            backAction={{ content: 'Products', onAction: () => { history.back() } }}
             title="Feeds library"
             subtitle="Manage your video feeds and organize your shoppable content efficiently."
-            primaryAction={{ content: 'Create Feed', icon: OrderDraftIcon, url:'edit' }}
+            primaryAction={{ content: 'Create Feed', icon: OrderDraftIcon, url: 'edit' }}
         >
             <VideoBox />
         </Page>

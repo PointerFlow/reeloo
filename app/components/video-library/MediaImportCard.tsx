@@ -1,4 +1,4 @@
-import { useLoaderData, useNavigate } from "@remix-run/react";
+import { useNavigate } from "@remix-run/react";
 import { BlockStack, Button, Card, Icon, InlineStack } from "@shopify/polaris";
 import { LogoInstagramIcon, LogoTiktokIcon, UploadIcon, LogoYoutubeIcon } from '@shopify/polaris-icons';
 import { MediaImportData } from "types/mediaImport.type";

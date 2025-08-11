@@ -1,7 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Box, Button, ButtonGroup, Card, Checkbox, Combobox, Divider, Icon, InlineGrid, InlineStack, Page, Text } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
-import { ArrowLeftIcon } from '@shopify/polaris-icons';
 import { useCallback, useState } from "react";
 import { VideoData } from "types/video.type";
 
@@ -67,18 +66,15 @@ export default function page() {
         },
         [selectedVideos]
     );
-    
+
     return (
-        <Page>
+        <Page
+            backAction={{ content: 'Products', onAction: () => { history.back() } }}
+            title="Input from Tiktok"
+        >
             <BlockStack gap="500">
                 <Card>
                     <BlockStack gap="600">
-                        <InlineStack gap="200">
-                            <div className="w-5 h-5"><ArrowLeftIcon /></div>
-                            <Text variant="headingMd" as="h2">
-                                Input from Tiktok
-                            </Text>
-                        </InlineStack>
                         <ButtonGroup>
                             <Card padding="200">
                                 <Button variant="tertiary" pressed={isFirstButtonActive} onClick={handleFirstButtonClick}>
@@ -106,9 +102,9 @@ export default function page() {
                                     }
                                 ></Combobox>
                             </div>
-                           <div className="w-fit">
-                             <Button>Search Video</Button>
-                           </div>
+                            <div className="w-fit">
+                                <Button>Search Video</Button>
+                            </div>
                         </div>
                     </Box>
                     <Box paddingBlockStart="300">

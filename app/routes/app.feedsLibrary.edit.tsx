@@ -61,18 +61,13 @@ export default function AppFeedsLibraryEdit() {
         </InlineGrid>
     );
     return (
-        <Page>
+        <Page
+            backAction={{ content: 'Products', onAction: () => { history.back() } }}
+            title="Create new Feed"
+        >
             <BlockStack gap="500">
                 <Card>
-                    <BlockStack gap="600">
-                        <InlineStack gap="200">
-                            <div className="w-5 h-5"><ArrowLeftIcon /></div>
-                            <Text variant="headingMd" as="h2">
-                                Create new Feed
-                            </Text>
-                        </InlineStack>
-                    </BlockStack>
-                    <Box paddingBlockStart="500">
+                    <Box paddingBlockStart="0">
                         <div className="flex gap-5">
                             <div className="w-[70%]">
                                 <TextField

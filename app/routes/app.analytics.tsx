@@ -18,7 +18,7 @@ export default function AppAnalytics() {
     return (
         <>
             <Page
-                backAction={{ content: 'Products', url: '#' }}
+                backAction={{ content: 'Products', onAction: () => { history.back() } }}
                 title="Analytics"
                 subtitle="Analyze, Adapt, and Elevate Your Returns Process"
                 primaryAction={{ icon: CalendarIcon, content: 'Last 15 Days' }}

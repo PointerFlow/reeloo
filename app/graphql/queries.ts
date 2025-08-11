@@ -85,3 +85,25 @@ export const getVideoFileByIdQuery = `#graphql
     }
   }
 `;
+
+// get shop query
+export const getShopQuery = `#graphql
+  query GetShop {
+    shop {
+      id
+      name
+      email
+      myshopifyDomain
+      currencyCode
+      timezoneOffset
+      primaryDomain {
+        url
+        host
+        sslEnabled
+      }
+    }
+  }
+`;
+
+
+

@@ -18,7 +18,7 @@ export default function helpSupport() {
     return (
         <>
             <Page
-                backAction={{ content: 'Products', url: '#' }}
+                backAction={{ content: 'Products', onAction: () => { history.back() } }}
                 title="Help Support"
                 subtitle="Your Questions, Answered – Fast, Friendly, and Always Here to Help!"
             >
