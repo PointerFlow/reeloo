@@ -14,6 +14,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { admin } = await authenticate.admin(request);
     return null;
 };
+
 export default function AppAnalytics() {
     return (
         <>

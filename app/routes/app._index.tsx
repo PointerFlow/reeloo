@@ -18,12 +18,10 @@ import FeedsLibrary from "app/components/home/FeedsLibrary";
 import Table from "app/components/home/Table";
 import Table2 from "app/components/home/Table2";
 import Support from "app/components/home/Support";
-
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
   return null;
 };
-
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
   return null;

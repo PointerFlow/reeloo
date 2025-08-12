@@ -1,13 +1,12 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import { useState } from "react";
-import { DropZone, InlineGrid, Text, Page, BlockStack, Card, InlineStack, Box, Divider, ButtonGroup, Button, ProgressBar } from '@shopify/polaris';
-import { VideoData } from "types/video.type";
+import { useCallback, useEffect, useState } from "react";
+import { DropZone, InlineGrid, Text, Page, BlockStack, Card, InlineStack, Box, Divider, ButtonGroup, Button, TextField } from '@shopify/polaris';
 import { stagingUploadMutation, uploadFileMutation } from "app/graphql/mutations";
 import { executeGraphQL } from "app/graphql/graphql";
 import { pullFileUntilReady } from "../helper/helper.jsx";
 import { getVideoFileByIdQuery } from "app/graphql/queries";
-import { useFetcher, useLoaderData, useRouteLoaderData } from "@remix-run/react";
+import { redirect, useFetcher, useRouteLoaderData } from "@remix-run/react";
 import { IShopData } from "types/shop.type";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -18,6 +17,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { admin } = await authenticate.admin(request);
     const formData = await request.formData()
     const file = formData.get("file") as File;
+    const storeId = formData.get("storeId") as string;
+    const title = formData.get("title") as string;
+
     if (!file) {
         console.log("not file upload");
     }
@@ -95,75 +97,69 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         60,
     );
 
-    // crate video api post reqesst process
-    // const videoData = fileByIdResponse.node;
-    // const storeApiResponse = await fetch(`${process.env.API_URL}/videos`, {
-    //     method: "POST",
-    //     headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: `Bearer ${process.env.API_TOKEN}`, 
-    //     },
-    //     body: JSON.stringify({
-    //         storeId: "test",
-    //         title: videoData.alt || file.name,
-    //         url: videoData.originalSource,
-    //         source: "Shopify",
-    //         width: videoData.image?.width || 0,
-    //         height: videoData.image?.height || 0,
-    //         duration: videoData.duration || 0,
-    //         format: videoData.format || file.type.split("/")[1],
-    //         size: file.size,
-    //     }),
-    // });
-
-    // if (!storeApiResponse.ok) {
-    //     return { success: false, message: "Failed to save video in DB" };
-    // }
-
-    return {
-        success: true,
-        data: {
-            fileCreateResponse,
-            fileByIdResponse,
-        },
+    const payload = {
+        storeId: storeId,
+        title: title,
+        url: fileByIdResponse?.node?.originalSource?.url,
+        source: "local",
+        width: fileByIdResponse.node.sources[0].width,
+        height: fileByIdResponse.node.sources[0].height,
+        duration: parseInt(fileByIdResponse?.timeTaken),
+        format: fileByIdResponse.node.sources[0].mimeType,
+        size: file.size
     };
 
+    await fetch("https://reelo-backend.vercel.app/api/v1/videos", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+
+    return redirect("/app/videoLibrary");
 };
 
 export default function page() {
     const [files, setFiles] = useState<File[]>([]);
-    const data = useLoaderData();
+    const [info, setInfo] = useState<any>(null);
+    const [tile, setTile] = useState('');
+    const handleEmailChange = useCallback((value: string) => setTile(value), []);
     const fetcher = useFetcher();
+    const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
+    const storeId = shopData.shop.id;
+
     const handleFileUpload = () => {
         const formData = new FormData();
         formData.append("file", files[0]);
-
+        formData.append("storeId", storeId);
+        formData.append("title", tile);
         fetcher.submit(formData, {
             method: "post",
             encType: "multipart/form-data",
         });
     };
-    const videos: VideoData[] = [
-        { id: '1', src: "https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850" },
-        { id: '2', src: "https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850" },
-        { id: '3', src: "https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850" },
-        { id: '4', src: "https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850" },
-        { id: '5', src: "https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850" },
-        { id: '6', src: "https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850" }
-    ];
 
-    // get shop data
+    useEffect(() => {
+        if (fetcher.data) {
+            setInfo(fetcher.data as any)
+        }
+    }, [fetcher.data])
 
-    const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
-    console.log(shopData);
-    
     return (
         <Page
             backAction={{ content: 'Products', onAction: () => { history.back() } }}
-            title="Input from Tiktok"
+            title="Upload from Device"
         >
             <BlockStack gap="500">
                 <Card>
+                    <TextField
+                        value={tile}
+                        onChange={handleEmailChange}
+                        label="Video title"
+                        type="text"
+                        autoComplete="title"
+                    />
                     <Box paddingBlockStart="300">
                         <Card>
                             {files.length == 0 && (
@@ -172,29 +168,52 @@ export default function page() {
                                     accept="video/*"
                                     allowMultiple={false}
                                 >
-                                    <DropZone.FileUpload actionHint="Select files to upload" />
+                                    <DropZone.FileUpload actionHint="Drag and drop or choose Mp4, HEIC, MOV videos to upload (max 20MB)" />
                                 </DropZone>
                             )}
-                            {files.length > 0 && (
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        flexDirection: "column",
-                                        gap: "10px",
-                                        maxWidth: "400px",
-                                    }}
-                                >
-                                    <video
-                                        controls
-                                        style={{ maxHeight: "300px", objectFit: "cover" }}
-                                    >
-                                        <source
-                                            src={URL.createObjectURL(files[0])}
-                                            type="video/mp4"
-                                        />
-                                        Your browser does not support the video tag.
-                                    </video>
-                                    <ButtonGroup fullWidth>
+                        </Card>
+                    </Box>
+                </Card>
+                {
+                    files[0] && (
+                        <Card>
+                            <BlockStack gap="300">
+                            </BlockStack>
+                            <Box paddingBlock="400">
+                                <InlineGrid gap="400" columns={4}>
+                                    {files.length > 0 && (
+                                        <Box position="relative">
+                                            <div className="relative h-80 w-full rounded-lg overflow-hidden">
+                                                <video
+                                                    controls
+                                                    className="h-full w-full object-cover"
+                                                >
+                                                    <source
+                                                        src={URL.createObjectURL(files[0])}
+                                                        type="video/mp4"
+                                                    />
+                                                </video>
+
+                                                {fetcher.state === "submitting" && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-lg">
+                                                        Uploading...
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                        </Box>
+                                    )}
+                                </InlineGrid>
+                            </Box>
+                            <BlockStack gap="300">
+                                <Divider />
+                                <InlineStack blockAlign="center" align="space-between">
+                                    <Text variant="headingSm" as="h6">
+                                        All Product Show
+                                    </Text>
+                                    <ButtonGroup>
+
+
                                         <Button
                                             variant="primary"
                                             tone="critical"
@@ -211,50 +230,13 @@ export default function page() {
                                                 : "Upload Video"}
                                         </Button>
                                     </ButtonGroup>
-                                </div>
-                            )}
+                                </InlineStack>
+                            </BlockStack>
                         </Card>
-                    </Box>
-                </Card>
-                <Card>
-                    <BlockStack gap="300">
-                        <InlineStack blockAlign="center" align="space-between">
-                            <Text variant="headingSm" as="h6">
-                                Tiktok all Videos
-                            </Text>
-                        </InlineStack>
-                        <Divider />
-                    </BlockStack>
-                    <Box paddingBlock="400">
-                        <InlineGrid gap="400" columns={4}>
-                            {videos.map((video) => (
-                                <Box key={video.id} position="relative">
-                                    <div className="absolute top-[50%] w-[80%] left-5">
-                                        <ProgressBar progress={20} />
-                                    </div>
-                                    <img
-                                        className="h-80 w-full object-cover rounded-lg"
-                                        src={video.src}
-                                        alt={`TikTok video ${video.id}`}
-                                    />
-                                </Box>
-                            ))}
-                        </InlineGrid>
-                    </Box>
-                    <BlockStack gap="300">
-                        <Divider />
-                        <InlineStack blockAlign="center" align="space-between">
-                            <Text variant="headingSm" as="h6">
-                                All Product Show
-                            </Text>
-                            <ButtonGroup>
-                                <Button>Cancel</Button>
-                                <Button variant="primary">Save</Button>
-                            </ButtonGroup>
-                        </InlineStack>
-                    </BlockStack>
-                </Card>
+                    )
+                }
             </BlockStack>
         </Page>
     );
 }
+
