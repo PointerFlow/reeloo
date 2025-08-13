@@ -3,7 +3,7 @@
 client_id = "7e11d97853611287e8f1196316389296"
 name = "reeloo"
 handle = "reeloo-5"
-application_url = "https://keen-athens-boating-jason.trycloudflare.com"
+application_url = "https://embedded-lauderdale-regarded-characteristics.trycloudflare.com"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products,read_products,write_files"
 
 [auth]
-redirect_urls = ["https://keen-athens-boating-jason.trycloudflare.com/auth/callback", "https://keen-athens-boating-jason.trycloudflare.com/auth/shopify/callback", "https://keen-athens-boating-jason.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://embedded-lauderdale-regarded-characteristics.trycloudflare.com/auth/callback", "https://embedded-lauderdale-regarded-characteristics.trycloudflare.com/auth/shopify/callback", "https://embedded-lauderdale-regarded-characteristics.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false

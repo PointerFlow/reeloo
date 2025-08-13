@@ -122,7 +122,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 export default function page() {
     const [files, setFiles] = useState<File[]>([]);
-    const [info, setInfo] = useState<any>(null);
     const [tile, setTile] = useState('');
     const handleEmailChange = useCallback((value: string) => setTile(value), []);
     const fetcher = useFetcher();
@@ -139,12 +138,6 @@ export default function page() {
             encType: "multipart/form-data",
         });
     };
-
-    useEffect(() => {
-        if (fetcher.data) {
-            setInfo(fetcher.data as any)
-        }
-    }, [fetcher.data])
 
     return (
         <Page
@@ -215,14 +208,13 @@ export default function page() {
 
 
                                         <Button
-                                            variant="primary"
-                                            tone="critical"
                                             onClick={() => setFiles([])}
                                         >
                                             Cancel
                                         </Button>
                                         <Button
                                             onClick={handleFileUpload}
+                                            variant="primary"
                                             disabled={fetcher.state === "submitting"}
                                         >
                                             {fetcher.state === "submitting"
