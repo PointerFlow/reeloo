@@ -10,6 +10,7 @@ import { useRouteLoaderData } from '@remix-run/react';
 import { IAllproduct } from 'types/allproduct.type';
 import { IShopifyProduct } from 'types/shopifyProduct.type';
 import { IAllVideo } from 'types/allVideo.type';
+import { IShopData } from 'types/shop.type';
 
 // Sample video data
 const tiktokVideos: TiktokVideoData[] = [
@@ -193,16 +194,17 @@ export default function VideoBox() {
 
 
     // get all videoas api fetch
+    const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
+    const storeId = shopData.shop.id;
     const [data, setData] = useState<IAllVideo[]>([]);
     useEffect(() => {
         (async () => {
-            const response = await fetch("https://reelo-backend.vercel.app/api/v1/videos?sort=-productCount,-createdAt", {
+            const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
                 method: "GET",
                 headers: {
                     "content-type": "application/json",
                 },
             })
-
             const data = await response.json();
             setData(data.data.videos);
         })()
@@ -503,7 +505,6 @@ export default function VideoBox() {
                                     )}
                                 </InlineStack>
                             </Box>
-
                             <Popover
                                 active={sortActive}
                                 activator={

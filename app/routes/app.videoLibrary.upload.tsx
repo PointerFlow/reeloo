@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { DropZone, InlineGrid, Text, Page, BlockStack, Card, InlineStack, Box, Divider, ButtonGroup, Button, TextField } from '@shopify/polaris';
 import { stagingUploadMutation, uploadFileMutation } from "app/graphql/mutations";
 import { executeGraphQL } from "app/graphql/graphql";
@@ -116,7 +116,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         },
         body: JSON.stringify(payload),
     });
-
     return redirect("/app/videoLibrary");
 };
 

@@ -1,8 +1,8 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { authenticate } from "../shopify.server";
 import { Page } from "@shopify/polaris";
-import VideoBox from "app/components/video-library/VideoBox";
 import { OrderDraftIcon } from '@shopify/polaris-icons';
+import VideoFeeds from "app/components/feeds/VideoFeeds";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -20,9 +20,9 @@ export default function AppVideoLibrary() {
             backAction={{ content: 'Products', onAction: () => { history.back() } }}
             title="Feeds library"
             subtitle="Manage your video feeds and organize your shoppable content efficiently."
-            primaryAction={{ content: 'Create Feed', icon: OrderDraftIcon, url: 'edit' }}
+            primaryAction={{ content: 'Create Feed', icon: OrderDraftIcon, url: 'create' }}
         >
-            <VideoBox />
+            <VideoFeeds/>
         </Page>
     );
 }

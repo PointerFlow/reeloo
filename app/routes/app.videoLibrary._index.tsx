@@ -4,7 +4,6 @@ import { authenticate } from "../shopify.server";
 import MediaImportCard from "app/components/video-library/MediaImportCard";
 import VideoBox from "app/components/video-library/VideoBox";
 
-
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
   return null;
