@@ -124,29 +124,6 @@ export default function VideoFeeds() {
             setIsDeleting(false);
         }
     };
-
-    // Delete single feed
-    const handleSingleDelete = async (feedId: string, feedName: string) => {
-        try {
-            await fetch(`https://reelo-backend.vercel.app/api/v1/feeds/${feedId}`, {
-                method: "DELETE",
-                headers: { "content-type": "application/json" }
-            });
-            setData(prev => prev.filter(feed => feed._id !== feedId));
-            setToastMessage(`Successfully deleted "${feedName}"`);
-            setShowToast(true);
-
-            const remainingItems = data.length - 1;
-            const newTotalPages = Math.ceil(remainingItems / itemsPerPage);
-            if (currentPage > newTotalPages && newTotalPages > 0) {
-                setCurrentPage(1);
-            }
-
-        } catch (error) {
-            setToastMessage("Error deleting feed. Please try again.");
-            setShowToast(true);
-        }
-    };
     // pagination
     const totalPages = Math.ceil(data.length / itemsPerPage);
     const handleNext = () => {
@@ -228,14 +205,6 @@ export default function VideoFeeds() {
                         onClick={() => navigate(`view/${feed._id}`)}
                         accessibilityLabel="View feed"
                     />
-                    {/* <Button
-                        size="micro"
-                        variant="tertiary"
-                        tone="critical"
-                        icon={DeleteIcon}
-                        onClick={() => handleSingleDelete(feed._id, feed.name)}
-                        accessibilityLabel="Delete feed"
-                    /> */}
                 </InlineStack>
             </IndexTable.Cell>
         </IndexTable.Row>

@@ -1,97 +1,88 @@
+import { useRouteLoaderData } from "@remix-run/react";
 import {
-    BlockStack,
-    Button,
-    Card,
-    Divider,
-    Icon,
-    IndexTable,
-    InlineStack,
-    Text,
-    useIndexResourceState
+  BlockStack,
+  Button,
+  Card,
+  Divider,
+  IndexTable,
+  InlineStack,
+  Text,
+  useIndexResourceState
 } from "@shopify/polaris";
 import { EditIcon } from "@shopify/polaris-icons";
-import { Table2Data } from "types/table2Data.type";
+import { useCallback, useEffect, useState } from "react";
+import { IFeedsDataAll } from "types/allFeeds.type";
+import { IShopData } from "types/shop.type";
 
 export default function Table2() {
-  const orders: Table2Data[] = [
-    {
-      id: "1020",
-      user_name: "Summer Sale",
-      total: "8 Videos",
-      date: "11/06/2025",
-    },
-    {
-      id: "1019",
-      user_name: "Summer Sale",
-      total: "8 Videos",
-      date: "11/06/2025",
-    },
-    {
-      id: "1018",
-      user_name: "Summer Sale",
-      total: "8 Videos",
-      date: "11/06/2025",
-    },
-  ];
-
   const resourceName = {
-    singular: "order",
-    plural: "orders",
+    singular: "feed",
+    plural: "feeds",
   };
 
-  const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(orders);
+  // Fetch feeds
+  const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
+  const storeId = shopData.shop.id;
+  const [data, setData] = useState<IFeedsDataAll[]>([]);
+  const fetchFeeds = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `https://reelo-backend.vercel.app/api/v1/feeds?storeId=${storeId}`,
+        { method: "GET", headers: { "content-type": "application/json" } }
+      );
+      const responseData = await response.json();
+      setData(responseData.data.feeds);
+    } catch (error) {
+      setData([]);
+    }
+  }, [storeId]);
+  useEffect(() => {
+    fetchFeeds();
+  }, [fetchFeeds]);
 
-  const rowMarkup = orders.map(({ id, user_name, total, date }, index) => (
+  // TypeScript fix for useIndexResourceState
+  const { selectedResources, allResourcesSelected, handleSelectionChange } =
+    useIndexResourceState(data as unknown as { id: string }[]);
+
+  const rowMarkup = data.map((feed, index) => (
     <IndexTable.Row
-      id={id}
-      key={id}
-      selected={selectedResources.includes(id)}
+      id={feed._id}
+      key={index}
+      selected={selectedResources.includes(feed._id)}
       position={index}
     >
       <IndexTable.Cell>
-        <Text variant="bodyMd" as="span">
-          {user_name}
-        </Text>
+        <Text variant="bodyMd" as="span">{feed?.name}</Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text variant="bodyMd" as="span">
-          {total}
-        </Text>
+        <Text variant="bodyMd" as="span">{feed.totalVideos || "0 Videos"}</Text>
       </IndexTable.Cell>
-      <IndexTable.Cell>{date}</IndexTable.Cell>
+      <IndexTable.Cell>{new Date(feed.createdAt).toLocaleDateString()}</IndexTable.Cell>
       <IndexTable.Cell>
-        <div className="w-7 h-7 bg-gray-100 border rounded-lg border-gray-300">
-          <Icon source={EditIcon} tone="base" />
-        </div>
+        <InlineStack gap="100">
+          <Button icon={EditIcon} />
+        </InlineStack>
       </IndexTable.Cell>
     </IndexTable.Row>
   ));
-
   return (
-    <>
-      <Card>
+    <Card>
+      <BlockStack gap="300">
         <BlockStack gap="300">
           <BlockStack gap="300">
-            <BlockStack gap="300">
-              <InlineStack blockAlign="center" align="space-between">
-                <Text variant="headingSm" as="h6">
-                  Feeds Library
-                </Text>
-                <Button>Manage Feeds</Button>
-              </InlineStack>
-              <Divider />
-            </BlockStack>
-            <Text variant="headingSm" as="p">
-              You have Created 05 Feeds
-            </Text>
+            <InlineStack blockAlign="center" align="space-between">
+              <Text variant="headingSm" as="h6">Feeds Library</Text>
+              <Button>Manage Feeds</Button>
+            </InlineStack>
+            <Divider />
           </BlockStack>
+          <Text variant="headingSm" as="p">You have created {data.length} feeds</Text>
+        </BlockStack>
+        <div className="max-h-96 overflow-y-auto">
           <IndexTable
             resourceName={resourceName}
-            itemCount={orders.length}
-            selectedItemsCount={
-              allResourcesSelected ? "All" : selectedResources.length
-            }
+            itemCount={data.length}
+            selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
             onSelectionChange={handleSelectionChange}
             headings={[
               { title: "Feeds Name" },
@@ -102,8 +93,8 @@ export default function Table2() {
           >
             {rowMarkup}
           </IndexTable>
-        </BlockStack>
-      </Card>
-    </>
+        </div>
+      </BlockStack>
+    </Card>
   );
 }

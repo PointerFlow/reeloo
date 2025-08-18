@@ -6,5 +6,6 @@ export interface IFeedsDataAll {
   status: any; 
   storeId: string;
   widgetType: string; 
-  videos: string[];      
+  videos: string[]; 
+  totalVideos:string;     
 }

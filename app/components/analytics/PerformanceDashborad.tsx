@@ -3,25 +3,25 @@ import { AlertCircleIcon } from '@shopify/polaris-icons';
 import { PerformanceData } from "types/performanceData.type";
 
 
-const PerformanceDashboard = () => {
+const PerformanceDashboard = ({ analytics }: { analytics?: { totalViews?: number; totalWatchTime?: number; orderConversionRate?: number } }) => {
     const metrics: PerformanceData[] = [
         {
             title: "Video Viewers",
-            value: "2,345",
+            value: `${analytics?.totalViews}`,
             subtitle: "(Last 15 days)",
             dataPoints: [10, 5, 0],
             dateLabels: ["01 Jan", "01 Apr", "01 Aug", "01 Dec"]
         },
         {
             title: "Avg Watch Time",
-            value: "12.5%",
+            value: `${analytics?.totalWatchTime}`,
             subtitle: "(Last 15 days)",
             dataPoints: [10, 5, 0],
             dateLabels: ["01 Jan", "01 Apr", "01 Aug", "01 Dec"]
         },
         {
             title: "Video Orders",
-            value: "47",
+            value: `${analytics?.orderConversionRate}`,
             subtitle: "(Last 15 days)",
             dataPoints: [10, 5, 0],
             dateLabels: ["01 Jan", "01 Apr", "01 Aug", "01 Dec"]

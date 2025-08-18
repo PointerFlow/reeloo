@@ -220,7 +220,7 @@ export default function VideoBox() {
             },
         })
         await res.json()
-        const response = await fetch("https://reelo-backend.vercel.app/api/v1/videos?sort=-productCount,-createdAt", {
+        const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
             method: "GET",
             headers: {
                 "content-type": "application/json",
