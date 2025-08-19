@@ -1,16 +1,15 @@
 import { Card, Button, Divider, EmptyState, Text, BlockStack, InlineStack, Popover, ActionList, Icon, Box, VideoThumbnail, InlineGrid, Thumbnail, TextField, ChoiceList, OptionList, Modal, Combobox, Listbox, Checkbox, ButtonGroup, Link } from '@shopify/polaris';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { SearchIcon, FilterIcon, SortIcon } from '@shopify/polaris-icons';
 import emtyvideoImg from "../../Images/emty_video.png"
 import { PlusIcon, DeleteIcon, EditIcon, ProductIcon, ProductAddIcon } from '@shopify/polaris-icons';
 import thumblineImage from "../../Images/tiktokVideoThumbline.jpg";
 import productImag from "../../Images/productImage.png";
 import { TiktokVideoData } from 'types/tiktokVideo.type';
-import { useRouteLoaderData } from '@remix-run/react';
+import { useFetcher, useRouteLoaderData } from '@remix-run/react';
 import { IAllproduct } from 'types/allproduct.type';
 import { IShopifyProduct } from 'types/shopifyProduct.type';
 import { IAllVideo } from 'types/allVideo.type';
-import { IShopData } from 'types/shop.type';
 
 // Sample video data
 const tiktokVideos: TiktokVideoData[] = [
@@ -91,6 +90,10 @@ const tiktokVideos: TiktokVideoData[] = [
 
 
 export default function VideoBox() {
+    const fetcher = useFetcher();
+    const { allVideos, shopifyProducts } = useRouteLoaderData("root") as { allVideos: IAllVideo[], shopifyProducts: IAllproduct };
+
+    // states
     const [active, setActive] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedBtn, setSelectedBtn] = useState<string[]>([]);
@@ -100,9 +103,13 @@ export default function VideoBox() {
     const [selected, setSelected] = useState<string[]>(['hidden']);
     const [selectedContent, setSelectedContent] = useState<'All Video' | 'Instagram' | 'Tiktok' | 'Device' | 'Youtube'>('All Video');
     const [selectProduct, setSelectProduct] = useState<string[]>([]);
+
+    // methodes
     const toggleActive = useCallback(() => setActive((active) => !active), []);
     const handleChange = useCallback((value: string[]) => setSelected(value), []);
     const togglePopup = () => setIsPopupOpen(!isPopupOpen);
+
+
 
     const handleContentSelect = useCallback((content: typeof selectedContent) => {
         setSelectedContent(content);
@@ -114,8 +121,6 @@ export default function VideoBox() {
             {selectedContent}
         </Button>
     );
-
-    const { shopifyProducts } = useRouteLoaderData("root") as { shopifyProducts: IAllproduct };
 
     const handleProductSelect = (productId: string, checked: boolean) => {
         setSelectProduct((prevSelected) => {
@@ -191,45 +196,13 @@ export default function VideoBox() {
         </Modal >
     );
 
-
-
-    // get all videoas api fetch
-    const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
-    const storeId = shopData.shop.id;
-    const [data, setData] = useState<IAllVideo[]>([]);
-    useEffect(() => {
-        (async () => {
-            const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
-                method: "GET",
-                headers: {
-                    "content-type": "application/json",
-                },
-            })
-            const data = await response.json();
-            setData(data.data.videos);
-        })()
-    }, [])
-
-    // delete video api fetch
-
-    const deleteHandler = async (id: string) => {
-        const res = await fetch("https://reelo-backend.vercel.app/api/v1/videos/" + id, {
-            method: "DELETE",
-            headers: {
-                "content-type": "application/json"
-            },
-        })
-        await res.json()
-        const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
-            method: "GET",
-            headers: {
-                "content-type": "application/json",
-            },
-        })
-        const data = await response.json();
-        setData(data.data.videos);
-    }
-
+    // handle delete video
+    const deleteHandler = (id: string) => {
+        fetcher.submit(
+            { id },
+            { method: "DELETE" }
+        );
+    };
 
     // TikTok Interface Component
     const TiktokInterface = () => (
@@ -249,7 +222,7 @@ export default function VideoBox() {
                                 <Icon tone="critical" source={DeleteIcon} />
                             </div>
                             <div className='absolute top-2 right-11 bg-white rounded-lg p-1 cursor-pointer'>
-                                <Link monochrome url="/app/videoLibrary/edit">
+                                <Link monochrome url={`/app/videoLibrary/edit/${video.id}`}>
                                     <Icon source={EditIcon} />
                                 </Link>
                             </div>
@@ -320,9 +293,9 @@ export default function VideoBox() {
     const AllvideoInterface = () => (
         <Box paddingBlock="400">
             {
-                data.length > 0 ? (
+                allVideos.length > 0 ? (
                     <InlineGrid columns={4} gap="300">
-                        {data.map((item, id) => (
+                        {allVideos.map((item, id) => (
                             <Card padding="0" key={id}>
                                 <Box position='relative'>
                                     <div className='h-64 w-full'>
@@ -333,7 +306,7 @@ export default function VideoBox() {
                                         <Icon tone="critical" source={DeleteIcon} />
                                     </div>
                                     <div className='absolute top-2 right-11 bg-white rounded-lg p-1 cursor-pointer'>
-                                        <Link monochrome url="/app/videoLibrary/edit">
+                                        <Link monochrome url={`/app/videoLibrary/edit/${item._id}`}>
                                             <Icon source={EditIcon} />
                                         </Link>
                                     </div>

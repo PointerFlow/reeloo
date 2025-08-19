@@ -215,10 +215,9 @@ export default function page() {
                                             onClick={handleFileUpload}
                                             variant="primary"
                                             disabled={fetcher.state === "submitting"}
+                                            loading={fetcher.state === "submitting"}
                                         >
-                                            {fetcher.state === "submitting"
-                                                ? "Uploading..."
-                                                : "Upload Video"}
+                                            Upload Video
                                         </Button>
                                     </ButtonGroup>
                                 </InlineStack>

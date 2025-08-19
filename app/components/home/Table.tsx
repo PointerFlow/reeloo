@@ -81,7 +81,8 @@ export default function Table() {
       <IndexTable.Cell>{new Date(video.updatedAt).toLocaleDateString()}</IndexTable.Cell>
       <IndexTable.Cell>
         <InlineStack gap="100">
-          <Button icon={EditIcon} onClick={()=> navigate("/app/videoLibrary/edit")}>
+          <Button icon={EditIcon} onClick={()=> navigate("/app/videoLibrary/edit/" + video._id)}>
+
           </Button>
           <Button onClick={()=> deleteHandler(video._id)} icon={DeleteIcon} tone="critical">
           </Button>
