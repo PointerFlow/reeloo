@@ -20,7 +20,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const shopData: IShopData = await executeGraphQL(admin, getShopQuery);
   const videos = await getAllVideos(shopData.shop.id as string);
   const feeds = await getAllFeeds(shopData.shop.id as string);
-console.log(feeds.data);
   return { shopifyProducts, shopData, allVideos: videos.data.videos, allFeeds: feeds.data.feeds };
 };
 

@@ -23,6 +23,8 @@ query GetAllProducts($after: String) {
 }
 `;
 
+
+
 export const getFileByIdQuery = `#graphql
   query GetFileById($id: ID!) {
     node(id: $id) {

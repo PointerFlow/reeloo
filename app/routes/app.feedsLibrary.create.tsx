@@ -18,7 +18,7 @@ import {
     ButtonGroup,
 } from "@shopify/polaris";
 import { PlayCircleIcon, NoteIcon } from "@shopify/polaris-icons";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { IAllVideo } from "types/allVideo.type";
 import { IShopData } from "types/shop.type";
 
@@ -27,15 +27,18 @@ interface Option {
     value: string;
 }
 export default function PageFeed() {
+    // state
     const [name, setName] = useState("");
     const [selected, setSelected] = useState("today");
     const [files, setFiles] = useState<File[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
-    const storeId = shopData.shop.id;
     const navigate = useNavigate();
-
     const [selectedVideos, setSelectedVideos] = useState<[]>([]);
+
+    const { shopData, allVideos } = useRouteLoaderData("root") as { shopData: IShopData, allVideos: IAllVideo[] };
+    const storeId = shopData.shop.id;
+
+    // handler
     const handleVideoCheckboxChange = (id: string, checked: boolean) => {
         setSelectedVideos((prev: any) => {
             if (checked) {
@@ -54,7 +57,6 @@ export default function PageFeed() {
     );
 
     const handleNameInput = useCallback((value: string) => setName(value), []);
-
     const handleSelectChange = useCallback((value: string) => setSelected(value), []);
 
     const options: Option[] = [
@@ -67,20 +69,6 @@ export default function PageFeed() {
         <DropZone.FileUpload actionHint="Select video from video library (max 100MB)" />
     );
 
-    // get all videoas api fetch
-    const [data, setData] = useState<IAllVideo[]>([]);
-    useEffect(() => {
-        (async () => {
-            const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
-                method: "GET",
-                headers: {
-                    "content-type": "application/json",
-                },
-            })
-            const data = await response.json();
-            setData(data.data.videos);
-        })()
-    }, [])
     // create feeds 
     const payload = {
         storeId: storeId,
@@ -189,7 +177,7 @@ export default function PageFeed() {
                     <BlockStack gap="500">
                         <Box paddingBlock="400">
                             <InlineGrid gap="400" columns={4}>
-                                {data.map((item, i) => (
+                                {allVideos && allVideos.map((item, i) => (
                                     <Box key={i} position="relative">
                                         <div className='h-64 w-full'>
                                             <video className="rounded-lg object-cover h-full" src={item.url}></video>

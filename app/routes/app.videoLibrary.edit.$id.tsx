@@ -7,11 +7,17 @@ import {
     Select,
     Text,
     TextField,
-    VideoThumbnail,
     Button,
     Box,
     InlineStack,
     Icon,
+    Modal,
+    Frame,
+    EmptyState,
+    ResourceList,
+    ResourceItem,
+    Thumbnail,
+    Checkbox
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { useCallback, useState } from "react";
@@ -27,217 +33,416 @@ import {
     OrderDraftIcon,
     DesktopIcon,
     TabletIcon,
-    MobileIcon
+    MobileIcon,
+    SearchIcon
 } from '@shopify/polaris-icons';
-import { useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, useRouteLoaderData } from "@remix-run/react";
+import { getVideoByid, updateVideo } from "app/actions/video.action";
+import { IAllproduct } from "types/allproduct.type";
+import { IImportVideo } from "types/IImportVideo.type";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
-    const { id } = params;
     await authenticate.admin(request);
-
-    const res = await fetch(`https://reelo-backend.vercel.app/api/v1/videos/${id}`, {
-        method: "GET",
-        headers: { "content-type": "application/json" },
-    });
-    const data = await res.json();
-
-    return { video: data.data.video };
+    const { id } = params;
+    const video = await getVideoByid(id as string);
+    return video
 };
 
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { admin } = await authenticate.admin(request);
-    return null;
+    const { id } = params;
+    try {
+        const formData = await request.formData();
+        const title = formData.get("title") as string;
+        const status = formData.get("status") as string;
+        const products = formData.getAll("products") as string[];
+        const result = await updateVideo(id as string, title, status, products);
+        return result;
+    } catch (e) {
+        return e
+    }
 };
+
+type PreviewDevice = 'desktop' | 'tablet' | 'mobile';
+type Product = {
+    id: string,
+    image: string,
+    title: string,
+    featuredMedia: {
+        preview: {
+            image: {
+                url: string,
+            }
+        }
+
+    }
+}
 
 export default function PageComponent() {
-    const { video } = useLoaderData<typeof loader>();
+    const fetcher = useFetcher();
+    const { video } = useLoaderData<IImportVideo>();
+    const routeData = useRouteLoaderData("root");
+    const shopifyProducts = (routeData as { shopifyProducts: IAllproduct })?.shopifyProducts;
 
-    // Controlled fields
+    // Form states
     const [videoTitle, setVideoTitle] = useState(video?.title || "");
     const [videoStatus, setVideoStatus] = useState(video?.status || "Active");
+    const [selectedProducts, setSelectedProducts] = useState<any>((video?.products));
+
+    // UI states
+    const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [previewDevice, setPreviewDevice] = useState<PreviewDevice>('desktop');
+    const [productSearchQuery, setProductSearchQuery] = useState("");
+    const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
 
     const handleStatusChange = useCallback((value: string) => setVideoStatus(value), []);
 
     const videoStatusOptions = [
         { label: 'Active', value: 'Active' },
-        { label: 'Inactive', value: 'Inactive' },
+        { label: 'Draft', value: 'Draft' },
     ];
 
+    const handleProductSelection = useCallback((productId: string) => {
+        setSelectedProductIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(productId)) {
+                newSet.delete(productId);
+            } else {
+                newSet.add(productId);
+            }
+            return newSet;
+        });
+    }, []);
+
+    const addSelectedProducts = useCallback(() => {
+        if (!shopifyProducts) return;
+        const productsToAdd = Object.values(shopifyProducts).filter((p: Product) =>
+            selectedProductIds.has(p.id) && !selectedProducts.find((sp: Product) => sp.id === p.id)
+        );
+        setSelectedProducts((prevProducts: Product[]) => [...prevProducts, ...productsToAdd]);
+        setSelectedProductIds(new Set());
+        setIsProductModalOpen(false);
+        setProductSearchQuery("");
+    }, [selectedProductIds, selectedProducts, shopifyProducts]);
+
+    // video update handler
+    const updateHandler = () => {
+        const productIds = selectedProducts.map((p: Product) => p.id).filter((id: string) => !!id);
+        const formData = new FormData();
+        formData.append("title", videoTitle);
+        formData.append("status", videoStatus);
+        productIds.forEach((id: string) => formData.append("products", id))
+        fetcher.submit(formData, { method: "PATCH" });
+    }
+
+    const formatVideoSize = (bytes: number) => {
+        if (!bytes) return "-";
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    };
+
+    const formatDuration = (seconds: number) => {
+        if (!seconds) return "-";
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    const tagProductIds = video?.products || [];
+    const tagProducts = Object.values(shopifyProducts).filter((product: Product) =>
+        tagProductIds.includes(product.id)
+    );
+
+    const removeProduct = useCallback((productId: string) => {
+        setSelectedProducts((prev: Product[]) => prev.filter(p => p.id !== productId));
+    }, []);
+
     return (
-        <Page
-            backAction={{ content: 'Videos', onAction: () => { history.back() } }}
-            title="Edit Video Details"
-            subtitle="Manage your videos, tag products, and build engaging shoppable content."
-            primaryAction={{ content: 'Update' }}
-            secondaryActions={[{ content: 'Cancel' }]}
-        >
-            <InlineGrid gap="500" columns={['twoThirds', 'oneThird']}>
-                <BlockStack gap="500">
-
-                    {/* Info Section */}
-                    <Card>
-                        <Box paddingBlockEnd="300">
-                            <Text variant="headingSm" as="h6">Information</Text>
-                        </Box>
-                        <InlineGrid gap="400" columns={['twoThirds', 'oneThird']}>
+        <Frame>
+            <Page
+                backAction={{
+                    content: 'Videos',
+                    onAction: () => {
+                    }
+                }}
+                title="Edit Video Details"
+                subtitle="Manage your videos, tag products, and build engaging shoppable content."
+                primaryAction={{
+                    content: fetcher.state === 'submitting' ? 'Updating...' : 'Update',
+                    onAction: updateHandler,
+                    loading: fetcher.state === 'submitting',
+                }}
+                secondaryActions={[
+                    {
+                        content: 'Cancel',
+                        onAction: () => {
+                        }
+                    }
+                ]}
+            >
+                {/* Product Selection Modal */}
+                <Modal
+                    open={isProductModalOpen}
+                    onClose={() => {
+                        setIsProductModalOpen(false);
+                        setSelectedProductIds(new Set());
+                        setProductSearchQuery("");
+                    }}
+                    title="Select Products"
+                    primaryAction={{
+                        content: `Add Selected (${selectedProductIds.size})`,
+                        onAction: addSelectedProducts,
+                        disabled: selectedProductIds.size === 0
+                    }}
+                    secondaryActions={[{
+                        content: 'Cancel',
+                        onAction: () => {
+                            setIsProductModalOpen(false);
+                            setSelectedProductIds(new Set());
+                            setProductSearchQuery("");
+                        }
+                    }]}
+                >
+                    <Modal.Section>
+                        <Box paddingBlockEnd="400">
                             <TextField
+                                label="Search"
                                 autoComplete="off"
-                                label="Video Title"
-                                value={videoTitle}
-                                onChange={setVideoTitle}
-                                placeholder="write a video title"
-                                requiredIndicator
+                                value={productSearchQuery}
+                                onChange={setProductSearchQuery}
+                                placeholder="Search products..."
+                                prefix={<Icon source={SearchIcon} />}
+                                clearButton
+                                onClearButtonClick={() => setProductSearchQuery("")}
                             />
-                            <Select
-                                label="Video Status"
-                                options={videoStatusOptions}
-                                onChange={handleStatusChange}
-                                value={videoStatus}
+                        </Box>
+
+                        {!shopifyProducts || Object.keys(shopifyProducts).length === 0 ? (
+                            <EmptyState
+                                heading="No products found"
+                                image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+                            >
+                                <p>Try adjusting your search terms</p>
+                            </EmptyState>
+                        ) : (
+                            <ResourceList
+                                resourceName={{ singular: 'product', plural: 'products' }}
+                                items={Array.isArray(shopifyProducts) ? shopifyProducts : []}
+                                renderItem={(product: any) => (
+                                    <ResourceItem
+                                        id={product.id}
+                                        onClick={() => handleProductSelection(product.id)}
+                                    >
+                                        <InlineStack gap="300" blockAlign="center">
+                                            <Checkbox
+                                                label=""
+                                                checked={selectedProductIds.has(product.id)}
+                                                onChange={() => handleProductSelection(product.id)}
+                                            />
+                                            <Thumbnail
+                                                source={product?.featuredMedia?.preview?.image?.url}
+                                                alt={product.title}
+                                                size="small"
+                                            />
+                                            <BlockStack gap="100">
+                                                <Text as="span" variant="bodyMd" fontWeight="medium">
+                                                    {product.title}
+                                                </Text>
+                                                {/* {product.price && (
+                                                    <Text as="span" variant="bodySm" tone="subdued">
+                                                        {product.price}
+                                                    </Text>
+                                                )} */}
+                                            </BlockStack>
+                                        </InlineStack>
+                                    </ResourceItem>
+                                )}
                             />
-                        </InlineGrid>
-                    </Card>
+                        )}
+                    </Modal.Section>
+                </Modal>
 
-                    {/* Video Details */}
-                    <Card>
-                        <BlockStack gap="300">
-                            <Text variant="headingSm" as="h6">Video Details</Text>
-                            <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-                                <video className="rounded-lg h-[100%]" width="100%" controls>
-                                    <source src={video?.url} type="video/mp4" />
-                                    Your browser does not support the video tag.
-                                </video>
-                                <BlockStack gap="200">
-                                    <Card>
-                                        <InlineStack blockAlign="center" gap="300">
-                                            <Card padding="100">
-                                                <Icon source={ImportIcon} />
-                                            </Card>
-                                            <Text as="span">Imported from: {video?.source || "-"}</Text>
-                                        </InlineStack>
-                                    </Card>
-                                    <Card>
-                                        <InlineStack blockAlign="center" gap="300">
-                                            <Card padding="100">
-                                                <Icon source={ViewIcon} />
-                                            </Card>
-                                            <Text as="span">Video Views: {video?.views || "0"}</Text>
-                                        </InlineStack>
-                                    </Card>
-                                    <Card>
-                                        <InlineStack blockAlign="center" gap="300">
-                                            <Card padding="100">
-                                                <Icon source={FileIcon} />
-                                            </Card>
-                                            <Text as="span">Video Size: {video?.size || "-"}</Text>
-                                        </InlineStack>
-                                    </Card>
-                                    <Card>
-                                        <InlineStack blockAlign="center" gap="300">
-                                            <Card padding="100">
-                                                <Icon source={ClockIcon} />
-                                            </Card>
-                                            <Text as="span">Duration: {video?.duration || "-"}</Text>
-                                        </InlineStack>
-                                    </Card>
-                                    <Card>
-                                        <InlineStack blockAlign="center" gap="300">
-                                            <Card padding="100">
-                                                <Icon source={HashtagIcon} />
-                                            </Card>
-                                            <Text as="span">Dimensions: {video?.width || "?"} x {video?.height || "?"}</Text>
-                                        </InlineStack>
-                                    </Card>
-                                    <Card>
-                                        <InlineStack blockAlign="center" gap="300">
-                                            <Card padding="100">
-                                                <Icon source={PageAttachmentIcon} />
-                                            </Card>
-                                            <Text as="span">Format: {video?.format || "-"}</Text>
-                                        </InlineStack>
-                                    </Card>
-                                </BlockStack>
-                            </InlineGrid>
-                        </BlockStack>
-                    </Card>
-
-                    {/* Tagged Products */}
-                    <Card>
-                        <BlockStack gap="300">
-                            <Text variant="headingSm" as="h6">Tag Products</Text>
-                            <InlineGrid gap="200" columns={2}>
-                                {video?.products?.map((product: any) => (
-                                    <Card key={product.id}>
-                                        <InlineStack gap="100" align="space-between" blockAlign="center">
-                                            <InlineStack gap="300">
-                                                <Card padding="0">
-                                                    <img
-                                                        className="w-14 h-14 object-cover"
-                                                        src={product.image}
-                                                        alt={product.title}
-                                                    />
-                                                </Card>
-                                                <Text as="span">{product.title}</Text>
-                                            </InlineStack>
-                                            <div className="cursor-pointer">
-                                                <Card padding="100">
-                                                    <Icon source={DeleteIcon} />
-                                                </Card>
-                                            </div>
-                                        </InlineStack>
-                                    </Card>
-                                ))}
-
-                                {/* Add Product Button */}
-                                <Card>
-                                    <InlineStack gap="100" align="space-between" blockAlign="center">
-                                        <InlineStack gap="300">
-                                            <Card>
-                                                <Icon source={PlusIcon} />
-                                            </Card>
-                                            <button>Add Product</button>
-                                        </InlineStack>
-                                    </InlineStack>
-                                </Card>
-                            </InlineGrid>
-                        </BlockStack>
-                    </Card>
-
-                    {/* Delete Button */}
-                    <Box width="100%" paddingBlockEnd="500">
-                        <Button variant="primary" tone="critical" icon={<Icon source={DeleteIcon} />}>
-                            Delete Video
-                        </Button>
-                    </Box>
-                </BlockStack>
-
-                {/* Preview Card */}
-                <div className="h-[600px]">
-                    <Card>
-                        <BlockStack gap="300">
-                            <InlineStack blockAlign="center" align="space-between">
-                                <Text variant="headingSm" as="h6">Preview</Text>
-                                <InlineStack gap="100">
-                                    <Button variant="primary" icon={<Icon source={DesktopIcon} />} />
-                                    <Button icon={<Icon source={TabletIcon} />} />
-                                    <Button icon={<Icon source={MobileIcon} />} />
-                                </InlineStack>
-                            </InlineStack>
-                            <VideoThumbnail
-                                videoLength={video?.duration || 0}
-                                thumbnailUrl={video?.thumbnail || ""}
-                                onClick={() => { }}
-                            />
-                            <Box>
-                                <InlineStack align="center">
-                                    <Button variant="primary" icon={<Icon source={OrderDraftIcon} />}>
-                                        Customize Style
-                                    </Button>
-                                </InlineStack>
+                <InlineGrid gap="500" columns={['twoThirds', 'oneThird']}>
+                    <BlockStack gap="500">
+                        {/* Info Section */}
+                        <Card>
+                            <Box paddingBlockEnd="300">
+                                <Text variant="headingSm" as="h6">Information</Text>
                             </Box>
-                        </BlockStack>
-                    </Card>
-                </div>
-            </InlineGrid>
-        </Page>
+                            <InlineGrid gap="400" columns={['twoThirds', 'oneThird']}>
+                                <TextField
+                                    autoComplete="off"
+                                    label="Video Title"
+                                    value={videoTitle}
+                                    onChange={setVideoTitle}
+                                    placeholder="Write a video title"
+                                    requiredIndicator
+                                    error={!videoTitle ? "Title is required" : undefined}
+                                />
+                                <Select
+                                    label="Video Status"
+                                    options={videoStatusOptions}
+                                    onChange={handleStatusChange}
+                                    value={videoStatus}
+                                />
+                            </InlineGrid>
+                        </Card>
+
+                        {/* Video Details */}
+                        <Card>
+                            <BlockStack gap="300">
+                                <Text variant="headingSm" as="h6">Video Details</Text>
+                                <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+                                    <Box>
+                                        <video
+                                            className="rounded-lg w-full"
+                                            controls
+                                        >
+                                            <source src={video?.url} type="video/mp4" />
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </Box>
+                                    <BlockStack gap="200">
+                                        {[
+                                            { icon: ImportIcon, label: `Source: ${video?.source || "Unknown"}` },
+                                            { icon: ViewIcon, label: `Views: ${video?.views?.toLocaleString() || "0"}` },
+                                            { icon: FileIcon, label: `Size: ${formatVideoSize(video?.size)}` },
+                                            { icon: ClockIcon, label: `Duration: ${formatDuration(video?.duration)}` },
+                                            { icon: HashtagIcon, label: `Dimensions: ${video?.width || "?"}×${video?.height || "?"}` },
+                                            { icon: PageAttachmentIcon, label: `Format: ${video?.format || "Unknown"}` },
+                                        ].map((item, idx) => (
+                                            <Card key={idx} padding="300">
+                                                <InlineStack blockAlign="center" gap="300">
+                                                    <Card padding="100">
+                                                        <Icon source={item.icon} />
+                                                    </Card>
+                                                    <Text as="span" variant="bodySm">{item.label}</Text>
+                                                </InlineStack>
+                                            </Card>
+                                        ))}
+                                    </BlockStack>
+                                </InlineGrid>
+                            </BlockStack>
+                        </Card>
+
+                        {/* Tagged Products */}
+                        <Card>
+                            <BlockStack gap="300">
+                                <InlineStack blockAlign="center" align="space-between">
+                                    <Text variant="headingSm" as="h6">Tagged Products</Text>
+                                    <Text as="span" variant="bodySm" tone="subdued">
+                                        {selectedProducts.length} product{selectedProducts.length !== 1 ? 's' : ''} tagged
+                                    </Text>
+                                </InlineStack>
+
+                                {selectedProducts.length === 0 ? (
+                                    <Text as="span" variant="bodySm">Tag products to make your video shoppable</Text>
+                                ) : (
+                                    <InlineGrid gap="200" columns={2}>
+                                        {tagProducts && tagProducts.map((product: Product) => (
+                                            <Card key={product.id} padding="300">
+                                                <InlineStack gap="100" align="space-between" blockAlign="center">
+                                                    <InlineStack gap="300" blockAlign="center">
+                                                        <Thumbnail
+                                                            source={product?.featuredMedia?.preview?.image?.url}
+                                                            alt={product.title}
+                                                            size="small"
+                                                        />
+                                                        <BlockStack gap="100">
+                                                            <div className="w-44">
+                                                                <Text as="span" variant="bodySm" fontWeight="medium">
+                                                                    {product.title}
+                                                                </Text>
+                                                            </div>
+                                                        </BlockStack>
+                                                    </InlineStack>
+                                                    <Button
+                                                        icon={DeleteIcon}
+                                                        variant="plain"
+                                                        onClick={() => removeProduct(product.id)}
+                                                        accessibilityLabel={`Remove ${product.title}`}
+                                                    />
+                                                </InlineStack>
+                                            </Card>
+                                        ))}
+
+                                        {/* Add Product Button */}
+                                        <Card padding="300">
+                                            <InlineStack gap="300" blockAlign="center">
+                                                <Card padding="100">
+                                                    <Icon source={PlusIcon} />
+                                                </Card>
+                                                <Button
+                                                    variant="plain"
+                                                    onClick={() => setIsProductModalOpen(true)}
+                                                >
+                                                    Add Product
+                                                </Button>
+                                            </InlineStack>
+                                        </Card>
+                                    </InlineGrid>
+                                )}
+                            </BlockStack>
+                        </Card>
+                    </BlockStack>
+
+                    {/* Preview Card */}
+                    <div className="sticky top-4">
+                        <Card>
+                            <BlockStack gap="300">
+                                <InlineStack blockAlign="center" align="space-between">
+                                    <Text variant="headingSm" as="h6">Preview</Text>
+                                    <InlineStack gap="100">
+                                        <Button
+                                            variant={previewDevice === 'desktop' ? 'primary' : 'secondary'}
+                                            icon={DesktopIcon}
+                                            onClick={() => setPreviewDevice('desktop')}
+                                            accessibilityLabel="Desktop preview"
+                                        />
+                                        <Button
+                                            variant={previewDevice === 'tablet' ? 'primary' : 'secondary'}
+                                            icon={TabletIcon}
+                                            onClick={() => setPreviewDevice('tablet')}
+                                            accessibilityLabel="Tablet preview"
+                                        />
+                                        <Button
+                                            variant={previewDevice === 'mobile' ? 'primary' : 'secondary'}
+                                            icon={MobileIcon}
+                                            onClick={() => setPreviewDevice('mobile')}
+                                            accessibilityLabel="Mobile preview"
+                                        />
+                                    </InlineStack>
+                                </InlineStack>
+
+                                <div className={`
+                                    mx-auto transition-all duration-200
+                                    ${previewDevice === 'desktop' ? 'w-full' : ''}
+                                    ${previewDevice === 'tablet' ? 'w-3/4' : ''}
+                                    ${previewDevice === 'mobile' ? 'w-1/2' : ''}
+                                `}>
+                                    {/* <VideoThumbnail
+                                        videoLength={video?.duration || 0}
+                                        thumbnailUrl={video?.thumbnail || ""}
+                                        onClick={() => { }}
+                                    /> */}
+                                </div>
+
+                                <Box>
+                                    <InlineStack align="center">
+                                        <Button
+                                            variant="primary"
+                                            icon={OrderDraftIcon}
+                                        >
+                                            Customize Style
+                                        </Button>
+                                    </InlineStack>
+                                </Box>
+                            </BlockStack>
+                        </Card>
+                    </div>
+                </InlineGrid>
+            </Page>
+        </Frame>
     );
 }
