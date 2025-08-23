@@ -40,6 +40,7 @@ import { useFetcher, useLoaderData, useRouteLoaderData } from "@remix-run/react"
 import { getVideoByid, updateVideo } from "app/actions/video.action";
 import { IAllproduct } from "types/allproduct.type";
 import { IImportVideo } from "types/IImportVideo.type";
+// import PopupModal from "app/components/home/PopupModal";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
@@ -274,6 +275,11 @@ export default function PageComponent() {
                         )}
                     </Modal.Section>
                 </Modal>
+{/* 
+                <PopupModal
+                    isProductModalOpen={isProductModalOpen}
+                    selectedProductIds={selectedProductIds}
+                /> */}
 
                 <InlineGrid gap="500" columns={['twoThirds', 'oneThird']}>
                     <BlockStack gap="500">
