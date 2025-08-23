@@ -3,7 +3,7 @@
 client_id = "7e11d97853611287e8f1196316389296"
 name = "reeloo"
 handle = "reeloo-5"
-application_url = "https://holdings-licking-sg-physical.trycloudflare.com"
+application_url = "https://inquire-bought-tank-responsible.trycloudflare.com"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products,read_products,write_files"
 
 [auth]
-redirect_urls = ["https://holdings-licking-sg-physical.trycloudflare.com/auth/callback", "https://holdings-licking-sg-physical.trycloudflare.com/auth/shopify/callback", "https://holdings-licking-sg-physical.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://inquire-bought-tank-responsible.trycloudflare.com/auth/callback", "https://inquire-bought-tank-responsible.trycloudflare.com/auth/shopify/callback", "https://inquire-bought-tank-responsible.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false

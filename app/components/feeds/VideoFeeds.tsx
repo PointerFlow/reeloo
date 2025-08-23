@@ -21,7 +21,7 @@ import {
   ViewIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  DeleteIcon
+  DeleteIcon,
 } from '@shopify/polaris-icons';
 import { useFetcher, useNavigate, useRevalidator, useRouteLoaderData } from "@remix-run/react";
 import { useState, useCallback } from "react";
@@ -154,7 +154,6 @@ export default function VideoFeeds() {
       </Frame>
     );
   }
-
   const rowMarkup = paginatedData.map((feed, index) => (
     <IndexTable.Row
       id={feed._id}
@@ -167,7 +166,11 @@ export default function VideoFeeds() {
       </IndexTable.Cell>
       <IndexTable.Cell>{feed.videos.length} Videos</IndexTable.Cell>
       <IndexTable.Cell>
-        <Badge tone="success">{feed.status}</Badge>
+        {feed.status === "draft" ? (
+          <Badge progress="complete">{feed.status}</Badge>
+        ) : (
+          <Badge progress="complete" tone="success">{feed.status}</Badge>
+        )}
       </IndexTable.Cell>
       <IndexTable.Cell>
         <Text as="p" variant="bodySm" tone="subdued">

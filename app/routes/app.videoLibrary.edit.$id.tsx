@@ -20,7 +20,7 @@ import {
     Checkbox,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import {
     ImportIcon,
     ViewIcon,
@@ -101,6 +101,14 @@ export default function PageComponent() {
     const [productSearchQuery, setProductSearchQuery] = useState("");
     const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
 
+    // Initialize selectedProductIds with already tagged products when modal opens
+    useEffect(() => {
+        if (isProductModalOpen) {
+            const taggedIds = selectedProducts.map(p => p.id);
+            setSelectedProductIds(new Set(taggedIds));
+        }
+    }, [isProductModalOpen, selectedProducts]);
+
     const handleStatusChange = useCallback((value: string) => setVideoStatus(value), []);
 
     const videoStatusOptions = [
@@ -122,14 +130,22 @@ export default function PageComponent() {
 
     const addSelectedProducts = useCallback(() => {
         if (!shopifyProducts) return;
-        const productsToAdd = Object.values(shopifyProducts).filter((p: Product) =>
-            selectedProductIds.has(p.id) && !selectedProducts.find((sp: Product) => sp.id === p.id)
+
+        // Get all selected products (both old and new)
+        const allSelectedProducts = Object.values(shopifyProducts).filter((p: Product) =>
+            selectedProductIds.has(p.id)
         );
-        setSelectedProducts((prevProducts: Product[]) => [...prevProducts, ...productsToAdd]);
+
+        setSelectedProducts(allSelectedProducts);
         setSelectedProductIds(new Set());
         setIsProductModalOpen(false);
         setProductSearchQuery("");
-    }, [selectedProductIds, selectedProducts, shopifyProducts]);
+    }, [selectedProductIds, shopifyProducts]);
+
+    // Filter products based on search query
+    const filteredProducts = Object.values(shopifyProducts || {}).filter((product: Product) =>
+        product.title.toLowerCase().includes(productSearchQuery.toLowerCase())
+    );
 
     // video update handler
     const updateHandler = () => {
@@ -219,7 +235,7 @@ export default function PageComponent() {
                             />
                         </Box>
 
-                        {!shopifyProducts || Object.keys(shopifyProducts).length === 0 ? (
+                        {!shopifyProducts || filteredProducts.length === 0 ? (
                             <EmptyState
                                 heading="No products found"
                                 image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
@@ -229,8 +245,8 @@ export default function PageComponent() {
                         ) : (
                             <ResourceList
                                 resourceName={{ singular: 'product', plural: 'products' }}
-                                items={Array.isArray(shopifyProducts) ? shopifyProducts : []}
-                                renderItem={(product: any) => (
+                                items={filteredProducts}
+                                renderItem={(product: Product) => (
                                     <ResourceItem
                                         id={product.id}
                                         onClick={() => handleProductSelection(product.id)}
@@ -250,11 +266,6 @@ export default function PageComponent() {
                                                 <Text as="span" variant="bodyMd" fontWeight="medium">
                                                     {product.title}
                                                 </Text>
-                                                {/* {product.price && (
-                                                    <Text as="span" variant="bodySm" tone="subdued">
-                                                        {product.price}
-                                                    </Text>
-                                                )} */}
                                             </BlockStack>
                                         </InlineStack>
                                     </ResourceItem>
@@ -286,6 +297,7 @@ export default function PageComponent() {
                                     options={videoStatusOptions}
                                     onChange={handleStatusChange}
                                     value={videoStatus}
+
                                 />
                             </InlineGrid>
                         </Card>

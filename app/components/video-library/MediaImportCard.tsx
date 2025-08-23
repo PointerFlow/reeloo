@@ -39,25 +39,23 @@ export default function MediaImportCard() {
         if (!url || url === "#") return;
         navigate(url);
     };
-    
+
     return (
-        
+
         <div className="grid grid-cols-4 gap-4">
             {
                 mediaSources && mediaSources.map((item, i) => {
                     return (
-                        <>
-                            <Card padding="800" key={i}>
-                                <BlockStack gap="400">
-                                    <InlineStack align="center">
-                                        <Card padding="050">
-                                            {item?.icon}
-                                        </Card>
-                                    </InlineStack>
-                                    <Button onClick={() => handleClick(item.url)} disabled={item?.disabled}>{item?.action}</Button>
-                                </BlockStack>
-                            </Card>
-                        </>
+                        <Card padding="800" key={i}>
+                            <BlockStack gap="400">
+                                <InlineStack align="center">
+                                    <Card padding="050">
+                                        {item?.icon}
+                                    </Card>
+                                </InlineStack>
+                                <Button onClick={() => handleClick(item.url)} disabled={item?.disabled}>{item?.action}</Button>
+                            </BlockStack>
+                        </Card>
                     )
                 })
             }
