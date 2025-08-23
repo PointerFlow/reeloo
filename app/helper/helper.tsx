@@ -1,9 +1,9 @@
 import { executeGraphQL } from "../graphql/graphql";
 
 export const pullFileUntilReady = async (
-    admin,
-    getFileByIdQuery,
-    fileId,
+    admin:any,
+    getFileByIdQuery:string,
+    fileId:string,
     interval = 1000,
     maxAttempts = 10,
 ) => {
