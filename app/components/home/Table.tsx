@@ -1,4 +1,4 @@
-import { useNavigate, useRouteLoaderData } from "@remix-run/react";
+import { useFetcher, useNavigate, useRevalidator, useRouteLoaderData } from "@remix-run/react";
 import {
   Card,
   IndexTable,
@@ -8,50 +8,23 @@ import {
   InlineStack,
   Button,
   Divider,
-  Icon,
 } from "@shopify/polaris";
 import { EditIcon, DeleteIcon } from "@shopify/polaris-icons";
-import { useEffect, useState } from "react";
 import { IAllVideo } from "types/allVideo.type";
-import { IShopData } from "types/shop.type";
 
 export default function Table() {
   const navigate = useNavigate();
-
+  const fetcher = useFetcher();
   // get all video
-  const { shopData } = useRouteLoaderData("root") as { shopData: IShopData };
-  const storeId = shopData.shop.id;
-  const [data, setData] = useState<IAllVideo[]>([]);
+  const { allVideos } = useRouteLoaderData("root") as { allVideos: IAllVideo };
 
-  useEffect(() => {
-    (async () => {
-      const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
-        method: "GET",
-        headers: { "content-type": "application/json" },
-      });
-      const data = await response.json();
-      setData(data.data.videos);
-    })();
-  }, []);
-
-// delete videos
-   const deleteHandler = async (id: string) => {
-        const res = await fetch("https://reelo-backend.vercel.app/api/v1/videos/" + id, {
-            method: "DELETE",
-            headers: {
-                "content-type": "application/json"
-            },
-        })
-        await res.json()
-       const response = await fetch(`https://reelo-backend.vercel.app/api/v1/videos?storeId=${storeId}`, {
-            method: "GET",
-            headers: {
-                "content-type": "application/json",
-            },
-        })
-        const data = await response.json();
-        setData(data.data.videos);
-    }
+  // handle delete video
+  const deleteHandler = (id: string) => {
+    fetcher.submit(
+      { id },
+      { method: "DELETE" }
+    );
+  };
 
   const resourceName = {
     singular: "video",
@@ -59,9 +32,9 @@ export default function Table() {
   };
 
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(data as unknown as { [key: string]: unknown }[]);
+    useIndexResourceState(allVideos as unknown as { [key: string]: unknown }[]);
 
-  const rowMarkup = data.map((video, index) => (
+  const rowMarkup = (Array.isArray(allVideos) ? allVideos : []).map((video, index) => (
     <IndexTable.Row
       id={video._id}
       key={index}
@@ -81,10 +54,10 @@ export default function Table() {
       <IndexTable.Cell>{new Date(video.updatedAt).toLocaleDateString()}</IndexTable.Cell>
       <IndexTable.Cell>
         <InlineStack gap="100">
-          <Button icon={EditIcon} onClick={()=> navigate("/app/videoLibrary/edit/" + video._id)}>
+          <Button icon={EditIcon} onClick={() => navigate("/app/videoLibrary/edit/" + video._id)}>
 
           </Button>
-          <Button onClick={()=> deleteHandler(video._id)} icon={DeleteIcon} tone="critical">
+          <Button onClick={() => deleteHandler(video._id)} icon={DeleteIcon} tone="critical">
           </Button>
 
         </InlineStack>
@@ -108,7 +81,7 @@ export default function Table() {
             <Divider />
           </BlockStack>
           <Text variant="headingSm" as="p">
-            You have uploaded {data.length} videos
+            You have uploaded {(Array.isArray(allVideos) ? allVideos : []).length} videos
           </Text>
         </BlockStack>
 
@@ -116,7 +89,7 @@ export default function Table() {
         <div className="max-h-96 overflow-y-auto">
           <IndexTable
             resourceName={resourceName}
-            itemCount={data.length}
+            itemCount={(Array.isArray(allVideos) ? allVideos : []).length}
             selectedItemsCount={allResourcesSelected ? "All" : selectedResources.length}
             onSelectionChange={handleSelectionChange}
             headings={[

@@ -3,7 +3,7 @@ export interface IFeedsDataAll {
   createdAt: string;      
   updatedAt: string;      
   name: string;
-  status: any; 
+  status: "active" | "draft"; 
   storeId: string;
   widgetType: string; 
   videos: string[]; 

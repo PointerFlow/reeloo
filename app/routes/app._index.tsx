@@ -18,12 +18,29 @@ import FeedsLibrary from "app/components/home/FeedsLibrary";
 import Table from "app/components/home/Table";
 import Table2 from "app/components/home/Table2";
 import Support from "app/components/home/Support";
+import { deleteVideo } from "app/actions/video.action";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
   return null;
 };
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
+  if (request.method === "DELETE") {
+    const formData = await request.formData();
+    let ids: string[] = [];
+    const allIds = formData.getAll("id");
+    ids = allIds.map(id => String(id));
+
+    if (!ids.length) {
+      return { success: false, error: "No IDs provided" };
+    }
+    try {
+      const response = await deleteVideo(ids.join(','));
+      return { success: true, data: response };
+    } catch (error) {
+      return { success: false, error };
+    }
+  }
   return null;
 };
 export default function Index() {

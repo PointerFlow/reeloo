@@ -52,7 +52,7 @@ export default function FeedsLibrary() {
         </BlockStack>
         <EmptyState
           heading="No feeds created yet"
-          action={{ icon: OrderDraftIcon, content: "Create Feed", onAction:()=> navigate("/app/feedsLibrary") }}
+          action={{ icon: OrderDraftIcon, content: "Create Feed", onAction:()=> navigate("/app/feedsLibrary/create") }}
           image={fullVideo}
         >
           <Text as="p" variant="bodyMd">

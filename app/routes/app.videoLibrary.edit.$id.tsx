@@ -17,7 +17,7 @@ import {
     ResourceList,
     ResourceItem,
     Thumbnail,
-    Checkbox
+    Checkbox,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { useCallback, useState } from "react";
@@ -84,10 +84,16 @@ export default function PageComponent() {
     const routeData = useRouteLoaderData("root");
     const shopifyProducts = (routeData as { shopifyProducts: IAllproduct })?.shopifyProducts;
 
+    // Get initial tagged products
+    const tagProductIds = video?.products || [];
+    const initialTaggedProducts = Object.values(shopifyProducts || {}).filter((product: Product) =>
+        tagProductIds.includes(product.id)
+    );
+
     // Form states
     const [videoTitle, setVideoTitle] = useState(video?.title || "");
     const [videoStatus, setVideoStatus] = useState(video?.status || "Active");
-    const [selectedProducts, setSelectedProducts] = useState<any>((video?.products));
+    const [selectedProducts, setSelectedProducts] = useState<Product[]>(initialTaggedProducts);
 
     // UI states
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -98,8 +104,8 @@ export default function PageComponent() {
     const handleStatusChange = useCallback((value: string) => setVideoStatus(value), []);
 
     const videoStatusOptions = [
-        { label: 'Active', value: 'Active' },
-        { label: 'Draft', value: 'Draft' },
+        { label: 'Active', value: 'active' },
+        { label: 'Draft', value: 'draft' },
     ];
 
     const handleProductSelection = useCallback((productId: string) => {
@@ -148,11 +154,6 @@ export default function PageComponent() {
         const secs = Math.floor(seconds % 60);
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     };
-
-    const tagProductIds = video?.products || [];
-    const tagProducts = Object.values(shopifyProducts).filter((product: Product) =>
-        tagProductIds.includes(product.id)
-    );
 
     const removeProduct = useCallback((productId: string) => {
         setSelectedProducts((prev: Product[]) => prev.filter(p => p.id !== productId));
@@ -296,7 +297,7 @@ export default function PageComponent() {
                                 <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
                                     <Box>
                                         <video
-                                            className="rounded-lg w-full"
+                                            className="rounded-lg w-full h-full object-cover"
                                             controls
                                         >
                                             <source src={video?.url} type="video/mp4" />
@@ -337,10 +338,19 @@ export default function PageComponent() {
                                 </InlineStack>
 
                                 {selectedProducts.length === 0 ? (
-                                    <Text as="span" variant="bodySm">Tag products to make your video shoppable</Text>
+                                    <BlockStack gap="300">
+                                        <Text as="span" variant="bodySm">Tag products to make your video shoppable</Text>
+                                        <Button
+                                            variant="primary"
+                                            icon={PlusIcon}
+                                            onClick={() => setIsProductModalOpen(true)}
+                                        >
+                                            Add Product
+                                        </Button>
+                                    </BlockStack>
                                 ) : (
                                     <InlineGrid gap="200" columns={2}>
-                                        {tagProducts && tagProducts.map((product: Product) => (
+                                        {selectedProducts.map((product: Product) => (
                                             <Card key={product.id} padding="300">
                                                 <InlineStack gap="100" align="space-between" blockAlign="center">
                                                     <InlineStack gap="300" blockAlign="center">
@@ -421,11 +431,14 @@ export default function PageComponent() {
                                     ${previewDevice === 'tablet' ? 'w-3/4' : ''}
                                     ${previewDevice === 'mobile' ? 'w-1/2' : ''}
                                 `}>
-                                    {/* <VideoThumbnail
-                                        videoLength={video?.duration || 0}
-                                        thumbnailUrl={video?.thumbnail || ""}
-                                        onClick={() => { }}
-                                    /> */}
+                                    <div className="h-96 w-full object-cover">
+                                        <video
+                                            className="rounded-lg w-full h-full object-cover"
+                                            controls
+                                        >
+                                            <source src={video?.url} type="video/mp4" />
+                                        </video>
+                                    </div>
                                 </div>
 
                                 <Box>

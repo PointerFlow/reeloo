@@ -23,11 +23,12 @@ import {
   ChevronRightIcon,
   DeleteIcon
 } from '@shopify/polaris-icons';
-import { useFetcher, useNavigate, useRouteLoaderData } from "@remix-run/react";
+import { useFetcher, useNavigate, useRevalidator, useRouteLoaderData } from "@remix-run/react";
 import { useState, useCallback } from "react";
 import { IFeedsDataAll } from "types/allFeeds.type";
 
 export default function VideoFeeds() {
+  const revalidator = useRevalidator();
   const navigate = useNavigate();
   const fetcher = useFetcher();
   const { allFeeds } = useRouteLoaderData("root") as { allFeeds: IFeedsDataAll };
@@ -41,7 +42,15 @@ export default function VideoFeeds() {
   const [toastMessage, setToastMessage] = useState("");
 
   const itemsPerPage = 10;
-  const paginatedData = (Array.isArray(allFeeds) ? allFeeds : []).slice(
+
+  // filter feeds by tabs
+  const filterdFeeds = (Array.isArray(allFeeds) ? allFeeds : []).filter(feed => {
+    if (selectedTab === 1) return feed.status === "active";
+    if (selectedTab === 2) return feed.status === "draft";
+    return true;
+  })
+
+  const paginatedData = filterdFeeds.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
@@ -90,6 +99,7 @@ export default function VideoFeeds() {
       setShowToast(true);
       clearSelection();
       setShowDeleteModal(false);
+      revalidator.revalidate();
     } catch (error) {
       setToastMessage("Failed to delete feeds. Please try again.");
       setShowToast(true);
@@ -99,7 +109,7 @@ export default function VideoFeeds() {
   };
 
   // pagination
-  const totalPages = Math.ceil((Array.isArray(allFeeds) ? allFeeds : []).length / itemsPerPage);
+  const totalPages = Math.ceil(filterdFeeds.length / itemsPerPage);
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
   };
@@ -197,7 +207,7 @@ export default function VideoFeeds() {
 
           <IndexTable
             resourceName={resourceName}
-            itemCount={allFeeds.length}
+            itemCount={filterdFeeds.length}
             selectedItemsCount={allResourcesSelected ? 'All' : selectedResources.length}
             onSelectionChange={handleSelectionChange}
             headings={[

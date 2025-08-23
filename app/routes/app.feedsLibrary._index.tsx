@@ -7,7 +7,6 @@ import { deleteFeeds } from "app/actions/feeds.action";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
-
     return null;
 };
 

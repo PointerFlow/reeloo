@@ -1,4 +1,5 @@
-import { redirect, useNavigate, useRouteLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs } from "@remix-run/node";
+import { useFetcher, useNavigate, useRouteLoaderData } from "@remix-run/react";
 import {
     BlockStack,
     Box,
@@ -18,23 +19,41 @@ import {
     ButtonGroup,
 } from "@shopify/polaris";
 import { PlayCircleIcon, NoteIcon } from "@shopify/polaris-icons";
+import { createFeeds } from "app/actions/feeds.action";
+import { authenticate } from "app/shopify.server";
 import { useCallback, useState } from "react";
 import { IAllVideo } from "types/allVideo.type";
 import { IShopData } from "types/shop.type";
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+    const { admin } = await authenticate.admin(request);
+    const formData = await request.formData();
+    const payload = {
+        storeId: formData.get('storeId'),
+        name: formData.get('name'),
+        widgetType: formData.get('widgetType'),
+        status: formData.get('status'),
+        videos: formData.getAll('videos'),
+    };
+    const result = await createFeeds(payload);
+    return result;
+};
 
 interface Option {
     label: string;
     value: string;
 }
+
 export default function PageFeed() {
+    const fetcher = useFetcher()
+
     // state
     const [name, setName] = useState("");
-    const [selected, setSelected] = useState("today");
+    const [selected, setSelected] = useState("active");
     const [files, setFiles] = useState<File[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate = useNavigate();
     const [selectedVideos, setSelectedVideos] = useState<[]>([]);
-
     const { shopData, allVideos } = useRouteLoaderData("root") as { shopData: IShopData, allVideos: IAllVideo[] };
     const storeId = shopData.shop.id;
 
@@ -60,8 +79,8 @@ export default function PageFeed() {
     const handleSelectChange = useCallback((value: string) => setSelected(value), []);
 
     const options: Option[] = [
-        { label: "Active", value: "Active" },
-        { label: "Diactive", value: "Diactive" },
+        { label: "Active", value: "active" },
+        { label: "Draft", value: "draft" },
     ];
 
     const validImageTypes = ["image/gif", "image/jpeg", "image/png"];
@@ -69,26 +88,16 @@ export default function PageFeed() {
         <DropZone.FileUpload actionHint="Select video from video library (max 100MB)" />
     );
 
-    // create feeds 
-    const payload = {
-        storeId: storeId,
-        name: name,
-        widgetType: "carousel",
-        videos: selectedVideos,
-    };
     const createFeedsHandler = async () => {
-        const result = await fetch("https://reelo-backend.vercel.app/api/v1/feeds", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify(payload),
-        })
-        await result.json();
-        redirect("feedsLibrary");
-        if (result.ok) {
-            navigate("/app/feedsLibrary");
-        }
+        const formData = new FormData();
+        formData.append("storeId", storeId);
+        formData.append("name", name);
+        formData.append("widgetType", "carousel");
+        formData.append("status", selected);
+        const videos = selectedVideos ?? [];
+        videos.forEach((id: string) => formData.append("videos", id));
+        fetcher.submit(formData, { method: "POST" });
+        navigate("/app/feedsLibrary");
     }
 
     const uploadedFiles =
