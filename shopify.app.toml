@@ -3,7 +3,7 @@
 client_id = "7e11d97853611287e8f1196316389296"
 name = "reeloo"
 handle = "reeloo-5"
-application_url = "https://yeast-tires-toe-fun.trycloudflare.com"
+application_url = "https://swedish-rj-cst-district.trycloudflare.com"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products,read_products,write_files"
 
 [auth]
-redirect_urls = ["https://yeast-tires-toe-fun.trycloudflare.com/auth/callback", "https://yeast-tires-toe-fun.trycloudflare.com/auth/shopify/callback", "https://yeast-tires-toe-fun.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://swedish-rj-cst-district.trycloudflare.com/auth/callback", "https://swedish-rj-cst-district.trycloudflare.com/auth/shopify/callback", "https://swedish-rj-cst-district.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false

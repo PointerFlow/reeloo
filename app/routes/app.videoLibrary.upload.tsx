@@ -44,8 +44,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         stagedUploadInput,
     );
 
-    const stagedTarget =
-        stagedUploadResponse.stagedUploadsCreate.stagedTargets[0];
+    const stagedTarget = stagedUploadResponse.stagedUploadsCreate.stagedTargets[0];
 
     // Append auth parameters
     stagedTarget.parameters.forEach(
@@ -85,7 +84,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         filesArray,
     );
 
-    const fileId = {
+    const fileId:any = {
         id: fileCreateResponse.fileCreate.files[0].id,
     };
 

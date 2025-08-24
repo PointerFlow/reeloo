@@ -18,7 +18,7 @@ export default function MediaImportCard() {
             label: "TikTok",
             action: "Import from TikTok",
             disabled: false,
-            url: "/app/videoLibrary/import"
+            url: "/app/videoLibrary/tiktok"
         },
         {
             icon: <Icon source={UploadIcon} />,

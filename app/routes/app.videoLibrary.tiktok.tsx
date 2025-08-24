@@ -2,10 +2,18 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { BlockStack, Box, Button, ButtonGroup, Card, Checkbox, Combobox, Divider, Icon, InlineGrid, InlineStack, Page, Text } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import { useCallback, useState } from "react";
-import { VideoData } from "types/video.type";
+// import { getVideosByUserName } from "app/actions/tiktok.action";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     await authenticate.admin(request);
+    // const url = new URL(request.url);
+    // const username = url.searchParams.get("username");
+    // try {
+    //     const videos = await getVideosByUserName(username as string);
+    //     return videos;
+    // } catch (error) {
+    //     return error;
+    // }
     return null;
 };
 
@@ -13,6 +21,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { admin } = await authenticate.admin(request);
     return null;
 };
+
+type VideoData = {
+    id: string,
+    src: string,
+}
 
 export default function page() {
     const [isFirstButtonActive, setIsFirstButtonActive] = useState(true);
@@ -66,6 +79,7 @@ export default function page() {
         },
         [selectedVideos]
     );
+
 
     return (
         <Page
