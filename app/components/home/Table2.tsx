@@ -40,7 +40,9 @@ export default function Table2() {
       <IndexTable.Cell>{new Date(feed.createdAt).toLocaleDateString()}</IndexTable.Cell>
       <IndexTable.Cell>
         <InlineStack gap="100">
-          <Button icon={EditIcon} />
+          <Button icon={EditIcon}
+            onClick={() => navigate(`feedsLibrary/edit/${feed._id}`)}
+          />
         </InlineStack>
       </IndexTable.Cell>
     </IndexTable.Row>

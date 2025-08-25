@@ -31,9 +31,10 @@ export const deleteFeeds = async (feedIds: string[]) => {
     }
 };
 
-export const createFeeds = async (body:any) => {
+// create feeds
+export const createFeeds = async (body: any) => {
     try {
-        const result = await fetch("https://reelo-backend.vercel.app/api/v1/feeds",{
+        const result = await fetch("https://reelo-backend.vercel.app/api/v1/feeds", {
             method: "POST",
             headers: {
                 "content-type": "application/json"
@@ -47,6 +48,20 @@ export const createFeeds = async (body:any) => {
     }
 }
 
+
+// get A feed 
+
+export const getAfeed = async (id: string) => {
+    try {
+        const feed = await fetch(`${BASE_URL}/feeds/${id}`, {
+            method: "GET"
+        })
+        const data = await feed.json();
+        return data;
+    } catch (e) {
+        return e;
+    }
+}
 
 
 

@@ -3,7 +3,7 @@
 client_id = "7e11d97853611287e8f1196316389296"
 name = "reeloo"
 handle = "reeloo-5"
-application_url = "https://guilty-matt-checklist-assessed.trycloudflare.com"
+application_url = "https://great-omissions-trading-sleeve.trycloudflare.com"
 embedded = true
 
 [build]
@@ -26,7 +26,7 @@ api_version = "2025-07"
 scopes = "write_products,read_products,write_files"
 
 [auth]
-redirect_urls = ["https://guilty-matt-checklist-assessed.trycloudflare.com/auth/callback", "https://guilty-matt-checklist-assessed.trycloudflare.com/auth/shopify/callback", "https://guilty-matt-checklist-assessed.trycloudflare.com/api/auth/callback"]
+redirect_urls = ["https://great-omissions-trading-sleeve.trycloudflare.com/auth/callback", "https://great-omissions-trading-sleeve.trycloudflare.com/auth/shopify/callback", "https://great-omissions-trading-sleeve.trycloudflare.com/api/auth/callback"]
 
 [pos]
 embedded = false
