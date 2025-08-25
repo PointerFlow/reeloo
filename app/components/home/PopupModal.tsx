@@ -28,19 +28,21 @@ export default function PopupModal({
   filteredProducts,
   addSelectedProducts,
   handleProductSelection,
+  videoId,
+  Vtitle,
+  Vstatus,
 }: popupProducts) {
   const fetcher = useFetcher();
   const [searchQuery, setSearchQuery] = useState("");
   const serchprduct = searchProducts(Array.isArray(shopifyProducts) ? shopifyProducts : [], searchQuery);
 
-
   // video update handler
   const updateHandler = () => {
     const productIds = Array.from(selectedProductIds).filter((id: string) => !!id);
     const formData = new FormData();
-    formData.append("id", "68aae2d54d00bda1a5dfa576")
-    formData.append("title", "alamin title");
-    formData.append("status", "active");
+    formData.append("id", videoId || "")
+    formData.append("title", Vtitle || "");
+    formData.append("status", Vstatus || "");
     productIds.forEach((id: string) => formData.append("products", id));
     fetcher.submit(formData, { method: "PATCH" });
   };
@@ -56,7 +58,6 @@ export default function PopupModal({
         title="Select Products"
         primaryAction={{
           content: `Add Selected (${selectedProductIds.size})`,
-          // onAction: addSelectedProducts,
           onAction: () => {
             addSelectedProducts();
             updateHandler();

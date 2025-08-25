@@ -31,9 +31,11 @@ export default function VideoBox() {
     allVideos: IAllVideo[];
     shopifyProducts: IShopifyProduct[];
   };
-
   // states
   const [active, setActive] = useState(false);
+  const [videoId, setVideoId] = useState("");
+  const [Vtitle, setVtitle] = useState("");
+  const [Vstatus, setVstatus] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedBtn, setSelectedBtn] = useState<string[]>([]);
   const [sortActive, setSortActive] = useState(false);
@@ -93,6 +95,12 @@ export default function VideoBox() {
   const deleteHandler = (id: string) => {
     fetcher.submit({ id }, { method: "DELETE" });
   };
+
+  const videoIdHandler = (id: string, title: string, status: string) => {
+    setVideoId(id);
+    setVtitle(title)
+    setVstatus(status);
+  }
 
   return (
     <>
@@ -258,6 +266,7 @@ export default function VideoBox() {
           shopifyProducts={shopifyProducts}
           setIsPopupOpen={setIsPopupOpen}
           setSelectedProductIds={setSelectedProductIds}
+          videoIdHandler={videoIdHandler}
         />
 
       </Card>
@@ -272,6 +281,9 @@ export default function VideoBox() {
         filteredProducts={shopifyProducts as any}
         addSelectedProducts={addSelectedProducts}
         handleProductSelection={handleProductSelection}
+        videoId={videoId}
+        Vtitle={Vtitle}
+        Vstatus={Vstatus}
       />
     </>
   );

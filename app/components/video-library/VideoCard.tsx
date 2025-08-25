@@ -21,7 +21,7 @@ import {
 import { getProductById } from "app/helper/utils";
 import { videoCard } from "types/videoCard.type";
 
-export default function VideoCard({ allVideos, deleteHandler, shopifyProducts, setIsPopupOpen, setSelectedProductIds }: videoCard) {
+export default function VideoCard({ allVideos, deleteHandler, shopifyProducts, setIsPopupOpen, setSelectedProductIds, videoIdHandler }: videoCard) {
     return (
         <Box paddingBlock="400">
             {allVideos.length > 0 ? (
@@ -81,12 +81,11 @@ export default function VideoCard({ allVideos, deleteHandler, shopifyProducts, s
                                         fullWidth
                                         icon={PlusIcon}
                                         variant="primary"
-                                        // onClick={togglePopup}
                                         onClick={() => {
                                             setIsPopupOpen(true);
-                                            // prefill already tagged products if needed
                                             const taggedIds = item.products || [];
                                             setSelectedProductIds(new Set(taggedIds));
+                                            videoIdHandler(item._id, item.title, item.status)
                                         }}
                                     >
                                         Tag Products

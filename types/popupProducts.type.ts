@@ -10,4 +10,7 @@ export interface popupProducts {
   filteredProducts: singleProduct[];
   addSelectedProducts: () => void;
   handleProductSelection: (id: string) => void;
+  videoId?:string;
+  Vtitle?:string;
+  Vstatus?:string;
 }

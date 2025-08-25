@@ -7,4 +7,5 @@ export interface videoCard {
     shopifyProducts: IShopifyProduct[];
     setIsPopupOpen: React.Dispatch<React.SetStateAction<boolean>>;
     setSelectedProductIds: React.Dispatch<React.SetStateAction<Set<string>>>;
+    videoIdHandler?:any;
 }
